@@ -512,6 +512,12 @@ export class Stage {
         return;
       }
       default: {
+        if (this.opts.mode === 'inplace') {
+          // sprinters side by side at one spot: a steeper view from the stand keeps every lane apart
+          pos = new THREE.Vector3(F.x + 0.8, 7.2, F.z + 7.6);
+          look = new THREE.Vector3(F.x + 0.2, 0.55, F.z);
+          break;
+        }
         const dist = 9 + 0.8 * s;
         pos = new THREE.Vector3(F.x + 0.1 * dist, 1.3 + 0.42 * dist, F.z + dist);
         look = new THREE.Vector3(F.x + 0.06 * dist, 0.75, F.z);
