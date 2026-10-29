@@ -390,7 +390,7 @@ function buildChart() {
   const dpr = window.devicePixelRatio || 1;
   const W = cv.clientWidth || 360, H = 170;
   cv.width = W * dpr; cv.height = H * dpr;
-  const g = cv.getContext('2d');
+  const g = cv.getContext('2d', { willReadFrequently: true });
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   const ref = runners[refIndex()];
   const isGap = state.chart === 'gap';
@@ -448,7 +448,7 @@ function niceTicks(lo, hi, n) {
 function drawChart() {
   const cv = $('#chart');
   if (!chart.img) return;
-  const g = cv.getContext('2d');
+  const g = cv.getContext('2d', { willReadFrequently: true });
   g.putImageData(chart.img, 0, 0);
   g.setTransform(chart.dpr, 0, 0, chart.dpr, 0, 0);
   const x = cx(state.time);

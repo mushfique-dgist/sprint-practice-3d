@@ -297,7 +297,7 @@ export class Stage {
 
   applyTint() {
     for (const r of this.runners) {
-      const c = this.opts.tint || this.opts.mode === 'overlay' ? BONE.clone().lerp(r.color, 0.55) : BONE;
+      const c = this.opts.mode === 'overlay' ? BONE.clone().lerp(r.color, 0.8) : this.opts.tint ? BONE.clone().lerp(r.color, 0.55) : BONE;
       for (const im of Object.values(this.boneIM)) if (r.i < im.count) im.setColorAt(r.i, c);
     }
     for (const im of Object.values(this.boneIM)) if (im.instanceColor) im.instanceColor.needsUpdate = true;
@@ -327,7 +327,7 @@ export class Stage {
     const hl = this.opts.highlight;
     const showMus = this.opts.muscles, showBones = this.opts.bones;
     for (const im of Object.values(this.boneIM)) im.visible = showBones;
-    const solo = this.view === 'gait';
+    const solo = this.view === 'gait' && this.opts.mode !== 'overlay';
     for (const r of this.runners) {
       const run = r.run, V = run.V;
       r.visible = r.visible !== false;
