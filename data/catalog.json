@@ -1,0 +1,1365 @@
+{
+ "built": "2026-10-30 00:03 KST",
+ "practice_steps": 20000,
+ "arms": {
+  "base": {
+   "label": "Before practice",
+   "short": "Before",
+   "color": "#94a0ad",
+   "about": "The starting sprinter, before the extra practice (it never trained with a device)."
+  },
+  "twin": {
+   "label": "Twin, no device",
+   "short": "Twin",
+   "color": "#0f766e",
+   "about": "Practised the same amount without any device. The reference for every gain."
+  },
+  "mix": {
+   "label": "Device in half the runs",
+   "short": "Half device",
+   "color": "#1a4f8a",
+   "about": "Practised with the hip device on in half of its practice runs."
+  },
+  "brake": {
+   "label": "Brake in half the runs",
+   "short": "Half brake",
+   "color": "#b45309",
+   "about": "Practised with a resisting hip torque (a brake) in half of its practice runs."
+  },
+  "dev": {
+   "label": "Device always on",
+   "short": "Always device",
+   "color": "#5b6b7c",
+   "about": "Practised with the hip device on in every practice run."
+  }
+ },
+ "main": {
+  "pairs": [
+   {
+    "k": 1,
+    "base": 1,
+    "off": {
+     "base": "runs/base1_off.bin.gz",
+     "twin": "runs/deck_twin_s1_off.bin.gz",
+     "mix": "runs/deck_mix_s1_off.bin.gz",
+     "brake": "runs/p1_brake_off.bin.gz",
+     "dev": "runs/p1_dev_off.bin.gz"
+    },
+    "on": {
+     "mix": "runs/deck_mix_s1_on.bin.gz",
+     "brake": "runs/p1_brake_on.bin.gz",
+     "dev": "runs/p1_dev_on.bin.gz"
+    },
+    "reg": {
+     "mix": 1.2243,
+     "brake": 1.0928,
+     "dev": -1.7021
+    },
+    "reg_on": {
+     "mix": 4.11562890625,
+     "brake": -1.6066230468749998,
+     "dev": 2.442195381433824
+    }
+   },
+   {
+    "k": 2,
+    "base": 2,
+    "off": {
+     "base": "runs/base2_off.bin.gz",
+     "twin": "runs/p2_twin_off.bin.gz",
+     "mix": "runs/p2_mix_off.bin.gz",
+     "brake": "runs/p2_brake_off.bin.gz",
+     "dev": "runs/p2_dev_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.8602,
+     "brake": 1.6081,
+     "dev": 0.0182
+    },
+    "reg_on": {
+     "mix": 4.1911289062499995,
+     "brake": -0.6917187500000002,
+     "dev": 4.264212890625
+    }
+   },
+   {
+    "k": 3,
+    "base": 3,
+    "off": {
+     "base": "runs/base3_off.bin.gz",
+     "twin": "runs/p3_twin_off.bin.gz",
+     "mix": "runs/p3_mix_off.bin.gz",
+     "brake": "runs/p3_brake_off.bin.gz",
+     "dev": "runs/p3_dev_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 0.5661,
+     "brake": 0.096,
+     "dev": -1.4137
+    },
+    "reg_on": {
+     "mix": 2.91039453125,
+     "brake": -2.4612578125000004,
+     "dev": 3.3409785156249994
+    }
+   },
+   {
+    "k": 4,
+    "base": 1,
+    "off": {
+     "base": "runs/base1_off.bin.gz",
+     "twin": "runs/p4_twin_off.bin.gz",
+     "mix": "runs/p4_mix_off.bin.gz",
+     "brake": "runs/p4_brake_off.bin.gz",
+     "dev": "runs/p4_dev_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.9574,
+     "brake": 1.8328,
+     "dev": -0.4927
+    },
+    "reg_on": {
+     "mix": 4.354154296875,
+     "brake": -0.6048789062500001,
+     "dev": 3.943146484375
+    }
+   },
+   {
+    "k": 5,
+    "base": 2,
+    "off": {
+     "base": "runs/base2_off.bin.gz",
+     "twin": "runs/p5_twin_off.bin.gz",
+     "mix": "runs/p5_mix_off.bin.gz",
+     "brake": "runs/p5_brake_off.bin.gz",
+     "dev": "runs/p5_dev_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.3416,
+     "brake": 2.0523,
+     "dev": -1.2059
+    },
+    "reg_on": {
+     "mix": 4.141794921875,
+     "brake": -0.7671210937500005,
+     "dev": 3.15009765625
+    }
+   },
+   {
+    "k": 6,
+    "base": 3,
+    "off": {
+     "base": "runs/base3_off.bin.gz",
+     "twin": "runs/p6_twin_off.bin.gz",
+     "mix": "runs/p6_mix_off.bin.gz",
+     "brake": "runs/p6_brake_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 0.8395,
+     "brake": 0.7169,
+     "dev": -1.9238
+    },
+    "reg_on": {
+     "mix": 3.5529197303921576,
+     "brake": -2.2171603860294113,
+     "dev": 3.7942452588848044
+    }
+   },
+   {
+    "k": 7,
+    "base": 1,
+    "off": {
+     "base": "runs/base1_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.9464,
+     "brake": 1.4538,
+     "dev": -0.1721
+    },
+    "reg_on": {
+     "mix": 4.117065843621399,
+     "brake": -1.149107175925926,
+     "dev": 4.7179705761316875
+    }
+   },
+   {
+    "k": 8,
+    "base": 2,
+    "off": {
+     "base": "runs/base2_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.3867,
+     "brake": 1.3026,
+     "dev": -0.8937
+    },
+    "reg_on": {
+     "mix": 3.874666015625,
+     "brake": -1.2736738281250006,
+     "dev": 3.68990234375
+    }
+   },
+   {
+    "k": 9,
+    "base": 3,
+    "off": {
+     "base": "runs/base3_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.0032,
+     "brake": 0.209,
+     "dev": -0.8659
+    },
+    "reg_on": {
+     "mix": 3.708822265625,
+     "brake": -2.11219140625,
+     "dev": 4.13094068627451
+    }
+   },
+   {
+    "k": 10,
+    "base": 1,
+    "off": {
+     "base": "runs/base1_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.016,
+     "brake": 0.9757,
+     "dev": -1.0606
+    },
+    "reg_on": {
+     "mix": 3.8048843137254895,
+     "brake": -1.310058823529412,
+     "dev": 3.8271960784313723
+    }
+   },
+   {
+    "k": 11,
+    "base": 2,
+    "off": {
+     "base": "runs/base2_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.6305,
+     "brake": 1.6634,
+     "dev": 0.0669
+    },
+    "reg_on": {
+     "mix": 4.199232421874999,
+     "brake": -1.44271484375,
+     "dev": 3.2397265625
+    }
+   },
+   {
+    "k": 12,
+    "base": 3,
+    "off": {
+     "base": "runs/base3_off.bin.gz"
+    },
+    "on": {},
+    "reg": {
+     "mix": 1.3816,
+     "brake": 0.2239,
+     "dev": -1.4482
+    },
+    "reg_on": {
+     "mix": 3.9412265625000007,
+     "brake": -2.343459083946078,
+     "dev": 3.9974511718750003
+    }
+   }
+  ],
+  "n_pairs": 12,
+  "n_bases": 3,
+  "n_starts": 256,
+  "reg": {
+   "mix": {
+    "m": 1.3461254631757216,
+    "lo": 1.1042276910886322,
+    "hi": 1.588023235262811,
+    "pos": 12,
+    "neg": 0
+   },
+   "brake": {
+    "m": 1.1022851821198838,
+    "lo": 0.8886824542173779,
+    "hi": 1.3158879100223897,
+    "pos": 12,
+    "neg": 0
+   },
+   "dev": {
+    "m": -0.9244477522578508,
+    "lo": -1.3115206366403123,
+    "hi": -0.5373748678753895,
+    "pos": 2,
+    "neg": 10
+   }
+  },
+  "twin_gain": 1.323545322105662,
+  "reg_on": {
+   "mix": 3.9093265596553373,
+   "brake": -1.4983304297442357,
+   "dev": 3.7115053005130165
+  }
+ },
+ "gear": {
+  "device_on": {
+   "at": "hip",
+   "color": "#f2b705"
+  },
+  "brake_on": {
+   "at": "hip",
+   "color": "#d9480f"
+  },
+  "worn": {
+   "at": "hip",
+   "color": "#868e96"
+  },
+  "ankle_brake": {
+   "at": "ankle",
+   "color": "#d9480f"
+  },
+  "hip_brake": {
+   "at": "hip",
+   "color": "#d9480f"
+  },
+  "hip_assist": {
+   "at": "hip",
+   "color": "#2f9e44"
+  }
+ },
+ "conditions": {
+  "groups": [
+   {
+    "title": "Conditions never practised",
+    "items": [
+     {
+      "key": "f1",
+      "label": "Headwind (air drag doubled)",
+      "desc": "Air drag 2 times the normal value during the race, as in a strong headwind.",
+      "reg": {
+       "mix": {
+        "m": 1.1512036649816175,
+        "lo": 0.8939987801528175,
+        "hi": 1.4084085498104175
+       },
+       "brake": {
+        "m": 0.9854003102022059,
+        "lo": 0.7466106229709707,
+        "hi": 1.2241899974334411
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_f1.bin.gz",
+       "mix": "runs/p1_mix_f1.bin.gz",
+       "brake": "runs/p1_brake_f1.bin.gz",
+       "dev": "runs/p1_dev_f1.bin.gz"
+      },
+      "available": true,
+      "gear": null,
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "f2",
+      "label": "Random pushes at the pelvis",
+      "desc": "Random pushes at the pelvis during the race (force standard deviation 300 N).",
+      "reg": {
+       "mix": {
+        "m": 1.3500811267436268,
+        "lo": 0.7306787879553714,
+        "hi": 1.9694834655318822
+       },
+       "brake": {
+        "m": 0.8031550019425021,
+        "lo": 0.01645211582529682,
+        "hi": 1.5898578880597074
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_f2.bin.gz",
+       "mix": "runs/p1_mix_f2.bin.gz",
+       "brake": "runs/p1_brake_f2.bin.gz",
+       "dev": "runs/p1_dev_f2.bin.gz"
+      },
+      "available": true,
+      "gear": null,
+      "force": true,
+      "unregistered": [],
+      "notes": [
+       "Pushes are random. Shown: run seed 1, the first of seeds 1 to 5 in which none of the four fell (a rule fixed before these recordings); In the registered test under pushes, 84% of the twins' runs ended early (a fall), against 80% for the device-in-half and 82% for the brake-in-half sprinters; the registered gain leaves runs that ended early out of both means."
+      ]
+     },
+     {
+      "key": "f3",
+      "label": "Unpowered 6 kg device worn",
+      "desc": "An unpowered 6 kg device worn at the hips: its mass is added, it gives no torque.",
+      "reg": {
+       "mix": {
+        "m": 0.7623838263962954,
+        "lo": 0.24561854186753762,
+        "hi": 1.2791491109250532
+       },
+       "brake": {
+        "m": 0.9299764600531317,
+        "lo": 0.40736494526260225,
+        "hi": 1.4525879748436612
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_f3.bin.gz",
+       "mix": "runs/p1_mix_f3.bin.gz",
+       "brake": "runs/p1_brake_f3.bin.gz",
+       "dev": "runs/p1_dev_f3.bin.gz"
+      },
+      "available": true,
+      "gear": "worn",
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "f5",
+      "label": "Ankle brake, 10 N·m, not sensed",
+      "desc": "A brake at both ankles (up to 10 N·m) that the sprinters cannot sense.",
+      "reg": {
+       "mix": {
+        "m": 1.359252200574675,
+        "lo": 1.0920647162343915,
+        "hi": 1.6264396849149585
+       },
+       "brake": {
+        "m": 1.0470058243076548,
+        "lo": 0.8021009656984484,
+        "hi": 1.2919106829168612
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_f5.bin.gz",
+       "mix": "runs/p1_mix_f5.bin.gz",
+       "brake": "runs/p1_brake_f5.bin.gz",
+       "dev": "runs/p1_dev_f5.bin.gz"
+      },
+      "available": true,
+      "gear": "ankle_brake",
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "dplus",
+      "label": "Hip brake, 5 N·m, not sensed",
+      "desc": "Extra damping at both hips, a brake of up to 5 N·m, not sensed.",
+      "reg": {
+       "mix": {
+        "m": 1.1722957633245186,
+        "lo": 0.9209176910356084,
+        "hi": 1.4236738356134286
+       },
+       "brake": {
+        "m": 1.200858240980031,
+        "lo": 0.9532444206667765,
+        "hi": 1.4484720612932855
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": "hip_brake",
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "dminus",
+      "label": "Hip assist, 5 N·m, not sensed",
+      "desc": "Negative damping at both hips, an assist of up to 5 N·m, not sensed.",
+      "reg": {
+       "mix": {
+        "m": 1.388111782417144,
+        "lo": 1.0255019054381458,
+        "hi": 1.7507216593961423
+       },
+       "brake": {
+        "m": 1.0687336657867974,
+        "lo": 0.8034343040761334,
+        "hi": 1.3340330274974614
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": "hip_assist",
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Muscles changed at test",
+    "items": [
+     {
+      "key": "f4",
+      "label": "10% weaker",
+      "desc": "Every muscle 10% weaker.",
+      "reg": {
+       "mix": {
+        "m": -0.21523875806420212,
+        "lo": -0.7460726690579068,
+        "hi": 0.3155951529295026
+       },
+       "brake": {
+        "m": 0.5065113947833382,
+        "lo": -0.07052967080416894,
+        "hi": 1.0835524603708453
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_f4.bin.gz",
+       "mix": "runs/p1_mix_f4.bin.gz",
+       "brake": "runs/p1_brake_f4.bin.gz",
+       "dev": "runs/p1_dev_f4.bin.gz"
+      },
+      "available": true,
+      "gear": null,
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "vminus",
+      "label": "Contract 10% slower",
+      "desc": "Muscles contract 10% slower (lower maximum shortening speed).",
+      "reg": {
+       "mix": {
+        "m": -0.01983879654319704,
+        "lo": -0.6471539493522388,
+        "hi": 0.6074763562658446
+       },
+       "brake": {
+        "m": 0.8021990512340477,
+        "lo": 0.21998068562304096,
+        "hi": 1.3844174168450545
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_vminus.bin.gz",
+       "mix": "runs/p1_mix_vminus.bin.gz",
+       "brake": "runs/p1_brake_vminus.bin.gz",
+       "dev": "runs/p1_dev_vminus.bin.gz"
+      },
+      "available": true,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "vplus",
+      "label": "Contract 10% faster",
+      "desc": "Muscles contract 10% faster (higher maximum shortening speed).",
+      "reg": {
+       "mix": {
+        "m": 3.1084798589816827,
+        "lo": 2.366102261509983,
+        "hi": 3.850857456453382
+       },
+       "brake": {
+        "m": 0.48039068828121206,
+        "lo": -0.28153413943020517,
+        "hi": 1.2423155159926293
+       }
+      },
+      "runs": {
+       "twin": "runs/p1_twin_vplus.bin.gz",
+       "mix": "runs/p1_mix_vplus.bin.gz",
+       "brake": "runs/p1_brake_vplus.bin.gz",
+       "dev": "runs/p1_dev_vplus.bin.gz"
+      },
+      "available": true,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "aminus",
+      "label": "Activate 50% slower",
+      "desc": "Muscles switch on and off 1.5 times as slowly.",
+      "reg": {
+       "mix": {
+        "m": 0.47705831657649916,
+        "lo": -0.30006645205625576,
+        "hi": 1.2541830852092541
+       },
+       "brake": {
+        "m": 0.8742722977690287,
+        "lo": 0.3882626498490108,
+        "hi": 1.3602819456890467
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "aplus",
+      "label": "Activate twice as fast",
+      "desc": "Muscles switch on and off 2 times as fast.",
+      "reg": {
+       "mix": {
+        "m": 2.011060847322069,
+        "lo": 1.5675366983107775,
+        "hi": 2.4545849963333604
+       },
+       "brake": {
+        "m": 0.5465038408411212,
+        "lo": -0.26034518580615207,
+        "hi": 1.3533528674883946
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "lminus",
+      "label": "Force–length range 15% narrower",
+      "desc": "Each muscle's force-length range 15% narrower.",
+      "reg": {
+       "mix": {
+        "m": 0.8407344862856593,
+        "lo": 0.4364771733894341,
+        "hi": 1.2449917991818844
+       },
+       "brake": {
+        "m": 0.6586351195678753,
+        "lo": 0.14830422656395736,
+        "hi": 1.1689660125717933
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     },
+     {
+      "key": "lplus",
+      "label": "Force–length range 20% wider",
+      "desc": "Each muscle's force-length range 20% wider.",
+      "reg": {
+       "mix": {
+        "m": 2.73230731165476,
+        "lo": 2.1483477497877326,
+        "hi": 3.316266873521787
+       },
+       "brake": {
+        "m": 1.3828196011605725,
+        "lo": 0.6124189281113774,
+        "hi": 2.1532202742097675
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [
+       "dev"
+      ],
+      "notes": [
+       "The device always on sprinter was not part of the registered test of this condition; it is shown with the twin's test settings, for comparison only."
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Model copies (possible loopholes)",
+    "items": [
+     {
+      "key": "notoe",
+      "label": "Toe motors removed",
+      "desc": "A copy of the model without toe motors: the toe joints are passive.",
+      "reg": {
+       "mix": {
+        "m": 0.9078691566478135,
+        "lo": 0.5416990251388101,
+        "hi": 1.274039288156817
+       },
+       "brake": {
+        "m": 1.0438783757791013,
+        "lo": 0.5743121326967497,
+        "hi": 1.5134446188614528
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "limit",
+      "label": "Joint limits half as stiff",
+      "desc": "A copy of the model whose joint limits are 0.5 times as stiff.",
+      "reg": {
+       "mix": {
+        "m": 1.3369102169547182,
+        "lo": 1.1138093276727263,
+        "hi": 1.5600111062367101
+       },
+       "brake": {
+        "m": 1.0675876021187043,
+        "lo": 0.8431622952204589,
+        "hi": 1.2920129090169497
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     },
+     {
+      "key": "spring",
+      "label": "Toe springs half as stiff",
+      "desc": "A copy of the model whose toe springs are 0.5 times as stiff.",
+      "reg": {
+       "mix": {
+        "m": 1.5300515146592577,
+        "lo": 1.1300672961298397,
+        "hi": 1.9300357331886757
+       },
+       "brake": {
+        "m": 0.9935673802499361,
+        "lo": 0.49275223371755483,
+        "hi": 1.4943825267823172
+       }
+      },
+      "runs": {},
+      "available": false,
+      "gear": null,
+      "force": false,
+      "unregistered": [],
+      "notes": []
+     }
+    ]
+   }
+  ],
+  "ref": {
+   "mix": {
+    "m": 1.3443842285612162,
+    "lo": 1.1017643090339058,
+    "hi": 1.5870041480885266
+   },
+   "brake": {
+    "m": 1.102791910852883,
+    "lo": 0.8896646942737444,
+    "hi": 1.3159191274320217
+   }
+  },
+  "forest": [
+   {
+    "title": "Same sprinters, measured again",
+    "rows": [
+     {
+      "key": "again",
+      "label": "Main test, measured again",
+      "mix": {
+       "m": 1.3443842285612162,
+       "lo": 1.1017643090339058,
+       "hi": 1.5870041480885266
+      },
+      "brake": {
+       "m": 1.102791910852883,
+       "lo": 0.8896646942737444,
+       "hi": 1.3159191274320217
+      }
+     },
+     {
+      "key": "set1",
+      "label": "New starting positions (set 1)",
+      "mix": {
+       "m": 1.3563799949189932,
+       "lo": 1.1341330453741618,
+       "hi": 1.5786269444638246
+      },
+      "brake": {
+       "m": 1.114246156365815,
+       "lo": 0.9063298463674769,
+       "hi": 1.3221624663641531
+      }
+     },
+     {
+      "key": "set2",
+      "label": "New starting positions (set 2)",
+      "mix": {
+       "m": 1.350316879591261,
+       "lo": 1.116202692875618,
+       "hi": 1.5844310663069041
+      },
+      "brake": {
+       "m": 1.1057817377043055,
+       "lo": 0.8871831950116011,
+       "hi": 1.32438028039701
+      }
+     },
+     {
+      "key": "finer",
+      "label": "Finer physics",
+      "mix": {
+       "m": 1.3410060307870908,
+       "lo": 1.0734588045654936,
+       "hi": 1.608553257008688
+      },
+      "brake": {
+       "m": 1.074408306640373,
+       "lo": 0.8278780905093899,
+       "hi": 1.320938522771356
+      }
+     }
+    ]
+   },
+   {
+    "title": "Possible loopholes closed",
+    "rows": [
+     {
+      "key": "notoe",
+      "label": "Toe motors removed",
+      "mix": {
+       "m": 0.9078691566478135,
+       "lo": 0.5416990251388101,
+       "hi": 1.274039288156817
+      },
+      "brake": {
+       "m": 1.0438783757791013,
+       "lo": 0.5743121326967497,
+       "hi": 1.5134446188614528
+      }
+     },
+     {
+      "key": "limit",
+      "label": "Joint limits half as stiff",
+      "mix": {
+       "m": 1.3369102169547182,
+       "lo": 1.1138093276727263,
+       "hi": 1.5600111062367101
+      },
+      "brake": {
+       "m": 1.0675876021187043,
+       "lo": 0.8431622952204589,
+       "hi": 1.2920129090169497
+      }
+     },
+     {
+      "key": "spring",
+      "label": "Toe springs half as stiff",
+      "mix": {
+       "m": 1.5300515146592577,
+       "lo": 1.1300672961298397,
+       "hi": 1.9300357331886757
+      },
+      "brake": {
+       "m": 0.9935673802499361,
+       "lo": 0.49275223371755483,
+       "hi": 1.4943825267823172
+      }
+     }
+    ]
+   },
+   {
+    "title": "Conditions never practised",
+    "rows": [
+     {
+      "key": "f1",
+      "label": "Headwind (air drag doubled)",
+      "mix": {
+       "m": 1.1512036649816175,
+       "lo": 0.8939987801528175,
+       "hi": 1.4084085498104175
+      },
+      "brake": {
+       "m": 0.9854003102022059,
+       "lo": 0.7466106229709707,
+       "hi": 1.2241899974334411
+      }
+     },
+     {
+      "key": "f2",
+      "label": "Random pushes at the pelvis",
+      "mix": {
+       "m": 1.3500811267436268,
+       "lo": 0.7306787879553714,
+       "hi": 1.9694834655318822
+      },
+      "brake": {
+       "m": 0.8031550019425021,
+       "lo": 0.01645211582529682,
+       "hi": 1.5898578880597074
+      }
+     },
+     {
+      "key": "f3",
+      "label": "Unpowered 6 kg device worn",
+      "mix": {
+       "m": 0.7623838263962954,
+       "lo": 0.24561854186753762,
+       "hi": 1.2791491109250532
+      },
+      "brake": {
+       "m": 0.9299764600531317,
+       "lo": 0.40736494526260225,
+       "hi": 1.4525879748436612
+      }
+     },
+     {
+      "key": "f5",
+      "label": "Ankle brake, 10 N·m, not sensed",
+      "mix": {
+       "m": 1.359252200574675,
+       "lo": 1.0920647162343915,
+       "hi": 1.6264396849149585
+      },
+      "brake": {
+       "m": 1.0470058243076548,
+       "lo": 0.8021009656984484,
+       "hi": 1.2919106829168612
+      }
+     },
+     {
+      "key": "dplus",
+      "label": "Hip brake, 5 N·m, not sensed",
+      "mix": {
+       "m": 1.1722957633245186,
+       "lo": 0.9209176910356084,
+       "hi": 1.4236738356134286
+      },
+      "brake": {
+       "m": 1.200858240980031,
+       "lo": 0.9532444206667765,
+       "hi": 1.4484720612932855
+      }
+     },
+     {
+      "key": "dminus",
+      "label": "Hip assist, 5 N·m, not sensed",
+      "mix": {
+       "m": 1.388111782417144,
+       "lo": 1.0255019054381458,
+       "hi": 1.7507216593961423
+      },
+      "brake": {
+       "m": 1.0687336657867974,
+       "lo": 0.8034343040761334,
+       "hi": 1.3340330274974614
+      }
+     }
+    ]
+   },
+   {
+    "title": "Muscles changed at test",
+    "rows": [
+     {
+      "key": "again",
+      "label": "Unchanged (main test)",
+      "mix": {
+       "m": 1.3443842285612162,
+       "lo": 1.1017643090339058,
+       "hi": 1.5870041480885266
+      },
+      "brake": {
+       "m": 1.102791910852883,
+       "lo": 0.8896646942737444,
+       "hi": 1.3159191274320217
+      }
+     },
+     {
+      "key": "f4",
+      "label": "10% weaker",
+      "mix": {
+       "m": -0.21523875806420212,
+       "lo": -0.7460726690579068,
+       "hi": 0.3155951529295026
+      },
+      "brake": {
+       "m": 0.5065113947833382,
+       "lo": -0.07052967080416894,
+       "hi": 1.0835524603708453
+      }
+     },
+     {
+      "key": "vminus",
+      "label": "Contract 10% slower",
+      "mix": {
+       "m": -0.01983879654319704,
+       "lo": -0.6471539493522388,
+       "hi": 0.6074763562658446
+      },
+      "brake": {
+       "m": 0.8021990512340477,
+       "lo": 0.21998068562304096,
+       "hi": 1.3844174168450545
+      }
+     },
+     {
+      "key": "aminus",
+      "label": "Activate 50% slower",
+      "mix": {
+       "m": 0.47705831657649916,
+       "lo": -0.30006645205625576,
+       "hi": 1.2541830852092541
+      },
+      "brake": {
+       "m": 0.8742722977690287,
+       "lo": 0.3882626498490108,
+       "hi": 1.3602819456890467
+      }
+     },
+     {
+      "key": "lminus",
+      "label": "Force–length range 15% narrower",
+      "mix": {
+       "m": 0.8407344862856593,
+       "lo": 0.4364771733894341,
+       "hi": 1.2449917991818844
+      },
+      "brake": {
+       "m": 0.6586351195678753,
+       "lo": 0.14830422656395736,
+       "hi": 1.1689660125717933
+      }
+     },
+     {
+      "key": "vplus",
+      "label": "Contract 10% faster",
+      "mix": {
+       "m": 3.1084798589816827,
+       "lo": 2.366102261509983,
+       "hi": 3.850857456453382
+      },
+      "brake": {
+       "m": 0.48039068828121206,
+       "lo": -0.28153413943020517,
+       "hi": 1.2423155159926293
+      }
+     },
+     {
+      "key": "aplus",
+      "label": "Activate twice as fast",
+      "mix": {
+       "m": 2.011060847322069,
+       "lo": 1.5675366983107775,
+       "hi": 2.4545849963333604
+      },
+      "brake": {
+       "m": 0.5465038408411212,
+       "lo": -0.26034518580615207,
+       "hi": 1.3533528674883946
+      }
+     },
+     {
+      "key": "lplus",
+      "label": "Force–length range 20% wider",
+      "mix": {
+       "m": 2.73230731165476,
+       "lo": 2.1483477497877326,
+       "hi": 3.316266873521787
+      },
+      "brake": {
+       "m": 1.3828196011605725,
+       "lo": 0.6124189281113774,
+       "hi": 2.1532202742097675
+      }
+     }
+    ]
+   },
+   {
+    "title": "Noisy commands at test",
+    "rows": [
+     {
+      "key": "noisy",
+      "label": "As in practice",
+      "mix": {
+       "m": 0.08910817766474455,
+       "lo": -0.2599026737017284,
+       "hi": 0.4381190290312175
+      },
+      "brake": {
+       "m": 0.45327459381307866,
+       "lo": 0.11250148401466636,
+       "hi": 0.794047703611491
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "oct23": [
+  {
+   "key": "controllers",
+   "title": "Four device controllers",
+   "sub": "Race 1: no device, and a 50 N·m hip device run three ways",
+   "desc": "One sprinter fine-tuned without a device (the control) and three fine-tuned with a hip device of up to 50 N·m, each driven by a different controller: pushing along the joint's motion, following the muscles' moment, or a learned controller.",
+   "runners": [
+    {
+     "label": "No device (control)",
+     "short": "Control",
+     "file": "runs/oct23_ctrl_s1.bin.gz",
+     "color": "#0f766e",
+     "gear": null,
+     "about": "no device"
+    },
+    {
+     "label": "Pushing along the motion",
+     "short": "Motion",
+     "file": "runs/oct23_motion50_s1.bin.gz",
+     "color": "#1a4f8a",
+     "gear": "device_on",
+     "about": "device on"
+    },
+    {
+     "label": "Following the muscles' moment",
+     "short": "Moment",
+     "file": "runs/oct23_moment50_s1.bin.gz",
+     "color": "#b45309",
+     "gear": "device_on",
+     "about": "device on"
+    },
+    {
+     "label": "Learned controller",
+     "short": "Learned",
+     "file": "runs/oct23_learned50_s1.bin.gz",
+     "color": "#7c3aed",
+     "gear": "device_on",
+     "about": "device on"
+    }
+   ],
+   "clip": true
+  },
+  {
+   "key": "adaptation",
+   "title": "Adapting to the device",
+   "sub": "Race 2: the base sprinter with a 25 N·m device, before and after adapting",
+   "desc": "The base sprinter without and with a 25 N·m moment-following device (not adapted), against a fine-tuned control without a device and a sprinter fine-tuned with the device on (adapted).",
+   "runners": [
+    {
+     "label": "No device",
+     "short": "Base",
+     "file": "runs/oct23_base_frozen.bin.gz",
+     "color": "#0f766e",
+     "gear": null,
+     "about": "no device"
+    },
+    {
+     "label": "Device on, not adapted",
+     "short": "Not adapted",
+     "file": "runs/oct23_frozen_moment25.bin.gz",
+     "color": "#1a4f8a",
+     "gear": "device_on",
+     "about": "device on"
+    },
+    {
+     "label": "No device, fine-tuned (control)",
+     "short": "Control",
+     "file": "runs/oct23_ctrl_s1.bin.gz",
+     "color": "#b45309",
+     "gear": null,
+     "about": "no device"
+    },
+    {
+     "label": "Device on, adapted",
+     "short": "Adapted",
+     "file": "runs/oct23_adapted_moment25_s1.bin.gz",
+     "color": "#7c3aed",
+     "gear": "device_on",
+     "about": "device on"
+    }
+   ],
+   "clip": true
+  },
+  {
+   "key": "skill",
+   "title": "Training level",
+   "sub": "Race 3: a less trained and a fully trained sprinter, with and without the device",
+   "desc": "A less trained sprinter and the fully trained base sprinter, each without and with the 25 N·m device (not adapted).",
+   "runners": [
+    {
+     "label": "Less trained, no device",
+     "short": "Less, off",
+     "file": "runs/oct23_b10k_frozen.bin.gz",
+     "color": "#0f766e",
+     "gear": null,
+     "about": "no device"
+    },
+    {
+     "label": "Less trained, device on",
+     "short": "Less, on",
+     "file": "runs/oct23_b10k_moment25.bin.gz",
+     "color": "#1a4f8a",
+     "gear": "device_on",
+     "about": "device on"
+    },
+    {
+     "label": "Fully trained, no device",
+     "short": "Full, off",
+     "file": "runs/oct23_base_frozen.bin.gz",
+     "color": "#b45309",
+     "gear": null,
+     "about": "no device"
+    },
+    {
+     "label": "Fully trained, device on",
+     "short": "Full, on",
+     "file": "runs/oct23_frozen_moment25.bin.gz",
+     "color": "#7c3aed",
+     "gear": "device_on",
+     "about": "device on"
+    }
+   ],
+   "clip": true
+  }
+ ],
+ "oct23_note": "Recorded on 22 Oct with the simulator before its 25 Oct corrections: these are the runs behind the 23 Oct videos, not this week's results. As in those videos, the race stops when the shortest recording ends. Distances here are the forward travel of the pelvis; the 23 Oct videos showed the centre of mass, so the numbers can differ slightly.",
+ "films": [
+  {
+   "file": "media/race3d_controllers.mp4",
+   "poster": "media/race3d_controllers.jpg",
+   "title": "Four device controllers (23 Oct, race 1)",
+   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+  },
+  {
+   "file": "media/race3d_adaptation.mp4",
+   "poster": "media/race3d_adaptation.jpg",
+   "title": "Adapting to the device (23 Oct, race 2)",
+   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+  },
+  {
+   "file": "media/race3d_skill.mp4",
+   "poster": "media/race3d_skill.jpg",
+   "title": "Training level (23 Oct, race 3)",
+   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+  }
+ ],
+ "films_lead": "Rendered (Blender, Cycles) from the same recordings as the three race videos of 23 Oct, which were recorded on 22 Oct with the simulator before its 25 Oct corrections.",
+ "b0": {
+  "recipes": [
+   {
+    "key": "thot",
+    "label": "Higher starting learning rate (the base's own)",
+    "G": 0.43677243923611103,
+    "n": 3
+   },
+   {
+    "key": "tstdf",
+    "label": "Half the largest exploration noise",
+    "G": 0.35160219822303895,
+    "n": 3
+   },
+   {
+    "key": "tstd08",
+    "label": "Larger exploration noise",
+    "G": -0.2280898897058824,
+    "n": 3
+   },
+   {
+    "key": "tgsde",
+    "label": "Exploration noise held for 133 ms",
+    "G": -0.357763893995098,
+    "n": 3
+   },
+   {
+    "key": "tlrconst",
+    "label": "Constant learning rate",
+    "G": -0.5313163239048091,
+    "n": 3
+   },
+   {
+    "key": "tnores",
+    "label": "Optimiser state carried over from the base",
+    "G": -0.5698645705678103,
+    "n": 3
+   },
+   {
+    "key": "tlrhalf",
+    "label": "Half the learning rate",
+    "G": -0.7643410615808824,
+    "n": 3
+   },
+   {
+    "key": "tpn",
+    "label": "Smoothing noise on the learning target",
+    "G": -1.6137874795751634,
+    "n": 3
+   }
+  ],
+  "ref": {
+   "m": 1.3461254631757216,
+   "lo": 1.1042276910886322,
+   "hi": 1.588023235262811,
+   "pos": 12,
+   "neg": 0
+  },
+  "caption": "Device-free changes to how the twin practises, first screen (3 runs each): change in the twin's distance against the standard twin. The best change (higher starting learning rate (the base's own)) adds +0.44 m, 32% of the device-in-half gain; further runs of the best recipes are under way."
+ },
+ "reading": [
+  "Gain: a practised sprinter's distance in 10 s minus its own twin's, both with the device removed. Each sprinter is evaluated from 256 start positions, twice; the gain of a pair is the mean over those runs.",
+  "The 95% interval treats the 12 pairs as the sample, stratified by the 3 starting sprinters, as registered before the runs. Runs that ended early (a fall) are left out of both means in these registered numbers.",
+  "In the 3D views each sprinter runs one start, the same for all, so a single race can differ from the registered average of its pair."
+ ],
+ "about": [
+  "<h2>About this page</h2>",
+  "The sprinters are the Bolt sprinter model (NVIDIA Warp physics, 136 muscles) controlled by neural networks trained with reinforcement learning. Everything shown comes from this week's trained networks: each one was run once in the simulator from the same start, and its bones and muscle paths were recorded 30 times per second.",
+  "Practice: starting from one of 3 trained sprinters, every copy trained 20,000 more iterations. The twin trained without a device; the others with a hip device whose torque (up to 25 N·m per hip) is set by the sprinter's own network, on in half of the runs or in all of them, or with a resisting hip torque (a brake) in half of the runs.",
+  "The registered numbers are those of the lab meeting slides of 30 Oct, read from the same analysis files. The tests and their decision rules were registered before the runs.",
+  "A repeat recording of the same sprinter can differ by about a tenth of a metre, because the simulation is sensitive to tiny numerical differences; pair 1's twin and device-in-half sprinter are the recordings shown in the slides.",
+  "Distance is the forward travel of the pelvis since the start, as in the evaluation. Muscle colour shows activation, from blue (relaxed) to red (fully active); muscle thickness grows with the muscle's maximum force.",
+  "Preliminary results for discussion in the lab; please do not cite or circulate."
+ ]
+}
