@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js';
-import { Stage, activationColor } from './scene.js';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202610300247';
+import { Stage, activationColor } from './scene.js?v=202610300247';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -50,6 +50,8 @@ async function init() {
   buildFilms();
   buildAbout();
   await showTab(state.tab, true);
+  setupIntro();
+  setInterval(checkUpdate, 5 * 60 * 1000);
   requestAnimationFrame(loop);
 }
 
@@ -111,6 +113,10 @@ function specs() {
   return out;
 }
 
+function pairsOf(b) { return CAT.main.pairs.filter((p) => p.base === b).map((p) => p.k); }
+function listAnd(a) { return a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`; }
+function minutes(steps) { return Math.round(steps / CAT.main.control_hz / 60); }
+
 function refIndex() {
   const i = runners.findIndex((r) => r.key === 'twin');
   return i >= 0 ? i : 0;
@@ -169,6 +175,7 @@ async function showTab(tab, first = false) {
 
 function wireControls() {
   for (const b of $$('.tabs button')) b.addEventListener('click', () => showTab(b.dataset.tab));
+  $('#updateReload').addEventListener('click', () => location.reload());
   for (const b of $$('#views button')) b.addEventListener('click', () => setView(b.dataset.view));
   $('#play').addEventListener('click', togglePlay);
   $('#bigplay').addEventListener('click', togglePlay);
@@ -230,6 +237,29 @@ function wireControls() {
   });
 }
 
+async function checkUpdate() {
+  try {
+    const c = await (await fetch('data/catalog.json', { cache: 'no-cache' })).json();
+    if (c.built && c.built !== CAT.built) $('#update').hidden = false;
+  } catch (e) { /* offline: try again later */ }
+}
+
+function setupIntro() {
+  const el = $('#intro');
+  let seen = false;
+  try { seen = localStorage.getItem('sp3d-intro') === '1'; } catch (e) { /* storage may be blocked */ }
+  if (seen || state.tab !== 'main') { el.hidden = true; return; }
+  el.hidden = false;
+  $('#bigplay').hidden = true;
+  const close = (play) => {
+    el.hidden = true;
+    try { localStorage.setItem('sp3d-intro', '1'); } catch (e) { /* ignore */ }
+    if (play) togglePlay(); else updatePlayUI();
+  };
+  $('#introPlay').addEventListener('click', () => close(true));
+  $('#introClose').addEventListener('click', () => close(false));
+}
+
 function setView(v) {
   stage.setView(v);
   for (const b of $$('#views button')) b.classList.toggle('on', b.dataset.view === v);
@@ -253,7 +283,7 @@ function step(n) {
 function updatePlayUI() {
   const ico = state.playing ? '<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
   $('#play svg').innerHTML = ico;
-  $('#bigplay').hidden = state.playing || (state.time > 0.01 && state.time < state.dur - 1e-6);
+  $('#bigplay').hidden = state.playing || (state.time > 0.01 && state.time < state.dur - 1e-6) || !$('#intro').hidden;
   $('#bigplay').setAttribute('aria-label', state.time >= state.dur - 1e-6 ? 'Replay' : 'Play');
 }
 
@@ -283,13 +313,15 @@ function buildPick() {
   const who = runners.map((r, i) => `<li style="--c:${r.color}" title="${r.about || ''}"><span class="sw">${r.num}</span><span><b>${r.short}</b>${r.on ? ' · <i>on</i>' : ''}${r.unregistered ? ' · <i>not registered</i>' : ''}</span>` +
     `<input type="checkbox" data-vis="${i}" ${r.visible ? 'checked' : ''} title="Show or hide" aria-label="Show ${r.label}"></li>`).join('');
   if (state.tab === 'main') {
-    const pairs = CAT.main.pairs.map((p) => `<button data-pair="${p.k}" class="${p.k === state.pair ? 'on' : ''}" ${p.off.twin ? '' : 'disabled'} title="Pair ${p.k}: starting sprinter ${p.base}">${p.k}</button>`).join('');
+    const pairs = CAT.main.pairs.map((p) => `<button data-pair="${p.k}" class="${p.k === state.pair ? 'on' : ''} fam${p.base}" ${p.off.twin ? '' : 'disabled'} title="Pair ${p.k}: copies of trained sprinter ${p.base}">${p.k}<i></i></button>`).join('');
     const P = CAT.main.pairs.find((p) => p.k === state.pair);
     const canOn = P.on && Object.keys(P.on).length > 0;
-    el.innerHTML = `<div class="pick-h"><h2>Main test · pair ${state.pair} of ${CAT.main.pairs.length}</h2><span class="hint">starting sprinter ${P.base}</span></div>
+    const fam = [...new Set(CAT.main.pairs.map((p) => p.base))].sort();
+    el.innerHTML = `<div class="pick-h"><h2>Pair ${state.pair} of ${CAT.main.pairs.length}</h2><span class="hint">copies of trained sprinter ${P.base}</span></div>
+      <p class="pick-note">A pair is one repeat of the whole experiment: one trained sprinter, copied, the copies practising in different ways, then racing. ${fam.map((b, i) => `${i ? 'pairs' : 'Pairs'} ${listAnd(pairsOf(b))} are copies of trained sprinter ${b}`).join('; ')} (the coloured mark under each number).</p>
       <div class="pairs" role="group" aria-label="Pair">${pairs}</div>
-      <label class="switch"><span><b>Device on</b> during this race<br><span class="hint">registered test: device removed</span></span><input type="checkbox" id="devOn" ${state.deviceOn ? 'checked' : ''} ${canOn ? '' : 'disabled'}></label>
-      <label class="switch"><span>Show the sprinter <b>before practice</b></span><input type="checkbox" id="showBase" ${state.showBase ? 'checked' : ''}></label>
+      <label class="switch"><span><b>Switch the device on</b> for this race<br><span class="hint">Off by default: the study measures what each copy can do once the device is taken off. On shows them wearing it, as in practice.</span></span><input type="checkbox" id="devOn" ${state.deviceOn ? 'checked' : ''} ${canOn ? '' : 'disabled'}></label>
+      <label class="switch"><span>Show the sprinter <b>before practice</b> (the original the copies were made from)</span><input type="checkbox" id="showBase" ${state.showBase ? 'checked' : ''}></label>
       <ul class="who">${who}</ul>`;
     for (const b of $$('[data-pair]', el)) b.addEventListener('click', () => { state.pair = +b.dataset.pair; state.time = 0; state.playing = false; updatePlayUI(); loadScenario(); });
     $('#devOn', el).addEventListener('change', (e) => { state.deviceOn = e.target.checked; state.time = 0; state.playing = false; updatePlayUI(); loadScenario(); });
@@ -297,7 +329,8 @@ function buildPick() {
   } else if (state.tab === 'cond') {
     const groups = CAT.conditions.groups.map((g) => `<div class="grp">${g.title}</div>` + g.items.map((c) =>
       `<button data-cond="${c.key}" class="${c.key === state.cond ? 'on' : ''}" ${c.available ? '' : 'disabled'}><span>${c.label}</span><span class="g" title="Registered gain of the device-in-half sprinter over its twin">${c.reg ? sg(c.reg.mix.m) : ''}</span></button>`).join('')).join('');
-    el.innerHTML = `<div class="pick-h"><h2>Changed conditions · pair 1</h2><span class="hint">right: registered gain, device in half</span></div>
+    el.innerHTML = `<div class="pick-h"><h2>Pair 1, under changed conditions</h2></div>
+      <p class="pick-note">Pick a condition the sprinters never met in practice. The number on the right is the official gain of the half-device copies over their twins under that condition (all ${CAT.main.n_pairs} pairs).</p>
       <div class="conds">${groups}</div><ul class="who">${who}</ul>`;
     for (const b of $$('[data-cond]', el)) b.addEventListener('click', () => { state.cond = b.dataset.cond; state.time = 0; state.playing = false; updatePlayUI(); loadScenario(); });
   } else if (state.tab === 'oct') {
@@ -317,8 +350,11 @@ function buildPick() {
 
 function buildHud() {
   let t = '';
-  if (state.tab === 'main') t = `<b>Main test, pair ${state.pair}</b> · device ${state.deviceOn ? '<b>on</b>' : 'removed'}<br><span class="k">Same start for every sprinter · 10 s race · distance = forward travel of the pelvis</span>`;
-  if (state.tab === 'cond') { const C = condItem(state.cond); t = `<b>${C ? C.label : ''}</b> · pair 1, hip device off<br><span class="k">A condition none of them practised</span>`; }
+  if (state.tab === 'main') {
+    const P = CAT.main.pairs.find((p) => p.k === state.pair);
+    t = `<b>Pair ${state.pair}: copies of trained sprinter ${P.base}, racing with the device ${state.deviceOn ? '<u>switched on</u>' : 'taken off'}</b><br><span class="k">They started identical and practised equally long; only the kind of practice differed</span>`;
+  }
+  if (state.tab === 'cond') { const C = condItem(state.cond); t = `<b>Pair 1 under a changed condition: ${C ? C.label.toLowerCase() : ''}</b><br><span class="k">Device taken off; none of them met this condition in practice</span>`; }
   if (state.tab === 'oct') { const R = CAT.oct23.find((r) => r.key === state.oct); t = `<b>${R.title}</b> · 23 Oct slides<br><span class="k">Recorded 22 Oct, before the 25 Oct simulator corrections</span>`; }
   $('#hudTitle').innerHTML = t;
 }
@@ -531,26 +567,76 @@ function buildExplain() {
     const reg = (arm) => `<li style="list-style:none;margin-left:-18px"><span style="color:${CAT.arms[arm].color}">●</span> ${CAT.arms[arm].label}: ${ci(M.reg[arm])}, ahead in ${M.reg[arm].pos} of ${M.n_pairs} pairs</li>`;
     let on = '';
     if (state.deviceOn) {
-      on = `<div class="note">Device on, as during practice. Registered means over ${M.n_pairs} pairs, relative to the twin without a device: ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].label.toLowerCase()} <span class="num">${sg(M.reg_on[a])} m</span>`).join(', ')}. For this pair: ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].short.toLowerCase()} ${sg(P.reg_on[a])} m`).join(', ')}.</div>`;
+      on = `<div class="note"><b>Device switched on for this race.</b> The device copies now wear it as in practice: the yellow band at the hips is the device pushing, the orange band the brake resisting (the twin and the original still have nothing). This shows help while worn, which is not what the study asks. Official averages with the device on, against the twin without it: ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].label.toLowerCase()} <span class="num">${sg(M.reg_on[a])} m</span>`).join(', ')}; for this pair ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].short.toLowerCase()} ${sg(P.reg_on[a])} m`).join(', ')}.</div>`;
     }
+    const A = CAT.arms, b = P.base, fam = [...new Set(M.pairs.map((p) => p.base))].sort();
+    const sw = M.arm_swing, rb = M.reg_base;
+    // each trained sprinter's arm style in words, from its measured arm motion (rules: less than half the other arm's swing,
+    // or less than half the elbow bend of the first half of the race)
+    const armDesc = (f) => {
+      const x = sw[f], parts = [];
+      if (x.l_swing_2 < 0.5 * x.r_swing_2) parts.push('hardly swings its left arm');
+      else if (x.r_swing_2 < 0.5 * x.l_swing_2) parts.push('hardly swings its right arm');
+      const lS = x.l_elbow_2 < 0.5 * x.l_elbow_1, rS = x.r_elbow_2 < 0.5 * x.r_elbow_1;
+      if (lS && rS) parts.push(`keeps both elbows almost straight once it reaches top speed, the ${x.l_elbow_2 <= x.r_elbow_2 ? 'left' : 'right'} one most`);
+      else if (lS) parts.push('keeps its left elbow almost straight once it reaches top speed');
+      else if (rS) parts.push('keeps its right elbow almost straight once it reaches top speed');
+      return parts.length ? parts.join(', and ') : 'swings and bends both arms throughout the race';
+    };
+    const minMix = fam.reduce((x, f) => (rb.mix[f] < rb.mix[x] ? f : x), fam[0]);
+    const minBrake = fam.reduce((x, f) => (rb.brake[f] < rb.brake[x] ? f : x), fam[0]);
+    const armRows = fam.map((f) => `<tr><td>Trained sprinter ${f}<br><span class="hint">pairs ${listAnd(pairsOf(f))}</span></td>` +
+      ['l', 'r'].map((s) => `<td>${sw[f][s + '_swing_2']}°<br><span class="hint">elbow ${sw[f][s + '_elbow_1']}° → ${sw[f][s + '_elbow_2']}°</span></td>`).join('') + '</tr>').join('');
+    const dot = (a) => `<span style="color:${A[a].color}">●</span>`;
     el.innerHTML = `<h2>What you are watching</h2>
-      <p>Each of the ${M.n_pairs} pairs began from one of ${M.n_bases} trained sprinters (${M.n_pairs / M.n_bases} pairs each). Every copy then practised for the same ${CAT.practice_steps.toLocaleString('en')} training iterations in a different way. Here they race for 10 s <b>with the device removed</b>, as in the registered main test, all from the same start.</p>
-      <ul class="how">${['base', 'twin', 'mix', 'brake', 'dev'].map((a) => `<li><span style="color:${CAT.arms[a].color}">●</span> <b>${CAT.arms[a].label}:</b> ${CAT.arms[a].about}</li>`).join('')}</ul>
+      <p class="big">Five copies of one sprinter race each other. They started out identical and practised for exactly as long; the only thing that differed was <b>how they practised</b>. So whoever pulls ahead shows which kind of practice worked better.</p>
+      <h3>How this race was made</h3>
+      <ol class="steps">
+        <li><b>One trained sprinter.</b> A simulated sprinter (${M.n_muscles} muscles, moved by a neural network) was trained until it ran well: ${M.base_steps.toLocaleString('en')} training rounds. ${dot('base')} <b>${A.base.label}</b> (lane 2) is that sprinter as it was.</li>
+        <li><b>Four copies practise for the same time, in different ways.</b> Each copy got ${CAT.practice_steps.toLocaleString('en')} more training rounds, about ${minutes(CAT.practice_steps)} minutes of running:
+          <ul class="how">
+            <li>${dot('twin')} <b>${A.twin.label}</b> (lane 3): normal practice, nothing attached. It is the yardstick for the others.</li>
+            <li>${dot('mix')} <b>${A.mix.label}</b> (lane 4): a hip device that adds push at both hips, switched on in a random half of its practice runs.</li>
+            <li>${dot('brake')} <b>${A.brake.label}</b> (lane 5): a brake that resists the hips, in a random half of its practice runs.</li>
+            <li>${dot('dev')} <b>${A.dev.label}</b> (lane 6): the hip device on in every practice run.</li>
+          </ul></li>
+        <li><b>The race: device taken off.</b> All five run for 10 s with nothing attached, from the same running start (${M.start_speed} m/s). The device was only a practice tool; what counts is what each copy can now do on its own.</li>
+      </ol>
       ${on}
-      <h3>Registered result, all ${M.n_pairs} pairs</h3>
-      <ul>${reg('mix')}${reg('brake')}${reg('dev')}</ul>
-      <p class="fine">Gain over the twin of the same pair, in metres covered in 10 s; each sprinter evaluated from ${M.n_starts} starts, twice; 95% interval stratified by starting sprinter. The twins themselves gained <span class="num">${sg(M.twin_gain)} m</span> in practice (mean of ${M.n_pairs}).</p>
-      <h3>Pair ${state.pair}</h3>
-      <p>Registered gains for this pair: ${['mix', 'brake', 'dev'].map((a) => `${CAT.arms[a].short.toLowerCase()} <span class="num">${sg(P.reg[a])} m</span>`).join(', ')}.</p>
-      <p>In the single start shown here, at the end: ${raceLine()}.</p>`;
+      <h3>What to look for</h3>
+      <p>Compare every lane with the twin (lane 3). In most pairs the half-device and half-brake copies pull ahead over the 10 s, and the always-device copy falls behind: it got used to the help and runs worse without it. The race table above gives every gap live, and the chart shows the gap growing; the diamonds at the chart's right edge are this pair's official averages.</p>
+      <h3>Why there are ${M.n_pairs} pairs</h3>
+      <p>One race could be luck, so the whole experiment was repeated ${M.n_pairs} times, each time with its own random practice. And so that it is not one sprinter's quirk, the copies come from ${M.n_bases} sprinters trained separately: ${fam.map((f) => `pairs ${listAnd(pairsOf(f))} from trained sprinter ${f}`).join('; ')}. This is pair ${state.pair}, from trained sprinter ${b}.</p>
+      <h3>The result over all ${M.n_pairs} pairs</h3>
+      <ul class="res">
+        <li>${dot('mix')} <b>${A.mix.label}:</b> ${ci(M.reg.mix)} ahead of its twin on average; ahead in ${M.reg.mix.pos} of ${M.n_pairs} pairs.</li>
+        <li>${dot('brake')} <b>${A.brake.label}:</b> ${ci(M.reg.brake)}; ahead in ${M.reg.brake.pos} of ${M.n_pairs} pairs.</li>
+        <li>${dot('dev')} <b>${A.dev.label}:</b> ${ci(M.reg.dev)}; behind in ${M.n_pairs - M.reg.dev.pos} of ${M.n_pairs} pairs.</li>
+      </ul>
+      <p class="fine">Distances after 10 s; brackets: the 95% range of the average. Each copy raced from ${M.n_starts} slightly different starts, twice, and these are the official, pre-registered averages. For comparison, the twins themselves improved by <span class="num">${sg(M.twin_gain)} m</span> from their practice, so practising with the device in half the runs roughly doubled what the same practice gave.</p>
+      <h3>This pair</h3>
+      <p>Official averages for pair ${state.pair} (${M.n_starts} starts): ${['mix', 'brake', 'dev'].map((a) => `${A[a].short.toLowerCase()} <span class="num">${sg(P.reg[a])} m</span>`).join(', ')}. In the single race shown here, at the end: ${raceLine()}.</p>
+      <p>Average of the ${pairsOf(b).length} pairs from trained sprinter ${b}: half device <span class="num">${sg(rb.mix[b])} m</span>, half brake <span class="num">${sg(rb.brake[b])} m</span>, always device <span class="num">${sg(rb.dev[b])} m</span>.</p>
+      <h3>Things you may notice</h3>
+      <ul class="how">
+        <li><b>The arms.</b> Each trained sprinter learned its own way of moving its arms, and every copy of it inherits that style, with or without the device.${fam.map((f) => ` Trained sprinter ${f} (pairs ${listAnd(pairsOf(f))}) ${armDesc(f)}.`).join('')} Training rewards only forward speed, staying in the lane and avoiding joint limits; the arms hardly change the speed, so nothing pushes them toward a human-like swing. The gain still appears for all ${M.n_bases} trained sprinters, ${minMix === minBrake ? `smallest for trained sprinter ${minMix} (half device ${sg(rb.mix[minMix])} m, half brake ${sg(rb.brake[minBrake])} m)` : `smallest for trained sprinter ${minMix} with the device in half the runs (${sg(rb.mix[minMix])} m) and for trained sprinter ${minBrake} with the brake (${sg(rb.brake[minBrake])} m)`}.
+          <table class="arms"><thead><tr><th></th><th>left arm</th><th>right arm</th></tr></thead><tbody>${armRows}</tbody></table>
+          <span class="fine">Shoulder swing at top speed (second half of the race), and how far the elbow bends in the first half → the second half; degrees, median over all of that sprinter's recordings.</span></li>
+        <li><b>The start.</b> The race begins at a run (${M.start_speed} m/s), not from blocks, as in the study.</li>
+        <li><b>Footprints</b> mark every foot strike, so step lengths can be compared; the table gives step length and steps per second.</li>
+      </ul>`;
   } else if (state.tab === 'cond') {
     const C = condItem(state.cond);
     if (!C) { el.innerHTML = ''; return; }
     const R = CAT.conditions.ref;
-    el.innerHTML = `<h2>${C.label}</h2>
+    el.innerHTML = `<h2>What you are watching</h2>
+      <p class="big">The four practised copies of pair 1 race again with the device taken off, but now the race itself is changed: <b>${C.label.toLowerCase()}</b>. None of them ever met this in practice. If what they gained in practice is real skill, it should carry over to a situation they never trained for.</p>
+      <h3>What is changed</h3>
       <p>${C.desc}</p>
+      <h3>Who is racing</h3>
       <ul class="how">${['twin', 'mix', 'brake', 'dev'].map((a) => `<li><span style="color:${CAT.arms[a].color}">●</span> <b>${CAT.arms[a].label}:</b> ${CAT.arms[a].about}</li>`).join('')}</ul>
-      <p>The same four pair-1 sprinters as in the main test, with the hip device off, tested under a condition none of them practised.</p>
+      <h3>What to look for</h3>
+      <p>As in the main test, compare each lane with the twin. The official number for this condition (below) is the average over all ${M.n_pairs} pairs and ${M.n_starts} starts; the race shown is one start of pair 1.</p>
       ${C.reg ? `<h3>Registered gain over the twin under this condition (${M.n_pairs} pairs)</h3>
       <ul><li>${CAT.arms.mix.label}: ${ci(C.reg.mix)}</li><li>${CAT.arms.brake.label}: ${ci(C.reg.brake)}</li></ul>
       <p class="fine">Main test, measured again with the same evaluator: device in half ${ci(R.mix)}, brake in half ${ci(R.brake)}.</p>` : ''}
@@ -558,7 +644,13 @@ function buildExplain() {
       <p>In the single start shown here, at the end: ${raceLine()}.</p>`;
   } else if (state.tab === 'oct') {
     const R = CAT.oct23.find((r) => r.key === state.oct);
-    el.innerHTML = `<h2>${R.title}</h2><p>${R.desc}</p><div class="note">${CAT.oct23_note}</div><p>At the end of this recording: ${raceLine()}.</p>`;
+    el.innerHTML = `<h2>What you are watching</h2>
+      <p class="big">${R.title}: one of the three races shown at the 23 Oct meeting, the same recordings, now in 3D.</p>
+      <p>${R.desc}</p>
+      <h3>Who is racing</h3>
+      <ul class="how">${R.runners.map((x) => `<li><span style="color:${x.color}">●</span> <b>${x.label}</b>${x.gear ? ' (device on: yellow band at the hips)' : ''}</li>`).join('')}</ul>
+      <div class="note">${CAT.oct23_note}</div>
+      <p>At the end of this recording: ${raceLine()}.</p>`;
   }
 }
 
