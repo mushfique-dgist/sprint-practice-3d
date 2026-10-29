@@ -1,5 +1,5 @@
 {
- "built": "2026-10-30 00:03 KST",
+ "built": "2026-10-30 00:22 KST",
  "practice_steps": 20000,
  "arms": {
   "base": {
@@ -1269,25 +1269,43 @@
  "oct23_note": "Recorded on 22 Oct with the simulator before its 25 Oct corrections: these are the runs behind the 23 Oct videos, not this week's results. As in those videos, the race stops when the shortest recording ends. Distances here are the forward travel of the pelvis; the 23 Oct videos showed the centre of mass, so the numbers can differ slightly.",
  "films": [
   {
+   "file": "media/oct23_2d_controllers.mp4",
+   "poster": "media/oct23_2d_controllers.jpg",
+   "title": "Race 1: four device controllers, as shown on 23 Oct",
+   "desc": "The 2D video of the 23 Oct slides (re-encoded with correct colour tags only)."
+  },
+  {
    "file": "media/race3d_controllers.mp4",
    "poster": "media/race3d_controllers.jpg",
-   "title": "Four device controllers (23 Oct, race 1)",
-   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+   "title": "Race 1: four device controllers, in 3D",
+   "desc": "Rendered in 3D (Blender, Cycles) from the same recordings; muscles go from blue (relaxed) to red (fully active)."
+  },
+  {
+   "file": "media/oct23_2d_adaptation.mp4",
+   "poster": "media/oct23_2d_adaptation.jpg",
+   "title": "Race 2: adapting to the device, as shown on 23 Oct",
+   "desc": "The 2D video of the 23 Oct slides (re-encoded with correct colour tags only)."
   },
   {
    "file": "media/race3d_adaptation.mp4",
    "poster": "media/race3d_adaptation.jpg",
-   "title": "Adapting to the device (23 Oct, race 2)",
-   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+   "title": "Race 2: adapting to the device, in 3D",
+   "desc": "Rendered in 3D (Blender, Cycles) from the same recordings; muscles go from blue (relaxed) to red (fully active)."
+  },
+  {
+   "file": "media/oct23_2d_skill.mp4",
+   "poster": "media/oct23_2d_skill.jpg",
+   "title": "Race 3: training level, as shown on 23 Oct",
+   "desc": "The 2D video of the 23 Oct slides (re-encoded with correct colour tags only)."
   },
   {
    "file": "media/race3d_skill.mp4",
    "poster": "media/race3d_skill.jpg",
-   "title": "Training level (23 Oct, race 3)",
-   "desc": "Rendered in 3D from the recordings behind the 23 Oct video; muscles go from blue (relaxed) to red (fully active)."
+   "title": "Race 3: training level, in 3D",
+   "desc": "Rendered in 3D (Blender, Cycles) from the same recordings; muscles go from blue (relaxed) to red (fully active)."
   }
  ],
- "films_lead": "Rendered (Blender, Cycles) from the same recordings as the three race videos of 23 Oct, which were recorded on 22 Oct with the simulator before its 25 Oct corrections.",
+ "films_lead": "The three race videos of 23 Oct, each next to a 3D render of the same recordings. They were recorded on 22 Oct with the simulator before its 25 Oct corrections, so they show the earlier setup, not this week's results.",
  "b0": {
   "recipes": [
    {

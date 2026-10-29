@@ -643,7 +643,7 @@ function buildResults() {
 
 function buildFilms() {
   const el = $('#films');
-  el.innerHTML = `<div class="wrap"><div><h2>Rendered films</h2><p class="lead">${CAT.films_lead}</p></div>
+  el.innerHTML = `<div class="wrap"><div><h2>Race videos</h2><p class="lead">${CAT.films_lead}</p></div>
     <div class="films">${CAT.films.map((f) => `<div class="card"><video controls preload="metadata" playsinline poster="${f.poster}" src="${f.file}"></video><h3>${f.title}</h3><p>${f.desc}</p></div>`).join('')}</div></div>`;
 }
 
