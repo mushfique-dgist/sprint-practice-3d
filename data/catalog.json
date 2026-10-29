@@ -1,5 +1,5 @@
 {
- "built": "2026-10-30 00:22 KST",
+ "built": "2026-10-30 00:26 KST",
  "practice_steps": 20000,
  "arms": {
   "base": {
@@ -1373,7 +1373,7 @@
  ],
  "about": [
   "<h2>About this page</h2>",
-  "The sprinters are the Bolt sprinter model (NVIDIA Warp physics, 136 muscles) controlled by neural networks trained with reinforcement learning. Everything shown comes from this week's trained networks: each one was run once in the simulator from the same start, and its bones and muscle paths were recorded 30 times per second.",
+  "The sprinters are the Bolt sprinter model (NVIDIA Warp physics, 136 muscles) controlled by neural networks trained with reinforcement learning. The main test and the changed conditions come from this week's trained networks, the 23 Oct races from the runs of 22 Oct. Each network was run once in the simulator from the same start, and its bones and muscle paths were recorded 30 times per second.",
   "Practice: starting from one of 3 trained sprinters, every copy trained 20,000 more iterations. The twin trained without a device; the others with a hip device whose torque (up to 25 N·m per hip) is set by the sprinter's own network, on in half of the runs or in all of them, or with a resisting hip torque (a brake) in half of the runs.",
   "The registered numbers are those of the lab meeting slides of 30 Oct, read from the same analysis files. The tests and their decision rules were registered before the runs.",
   "A repeat recording of the same sprinter can differ by about a tenth of a metre, because the simulation is sensitive to tiny numerical differences; pair 1's twin and device-in-half sprinter are the recordings shown in the slides.",

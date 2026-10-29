@@ -318,7 +318,7 @@ function buildPick() {
 function buildHud() {
   let t = '';
   if (state.tab === 'main') t = `<b>Main test, pair ${state.pair}</b> · device ${state.deviceOn ? '<b>on</b>' : 'removed'}<br><span class="k">Same start for every sprinter · 10 s race · distance = forward travel of the pelvis</span>`;
-  if (state.tab === 'cond') { const C = condItem(state.cond); t = `<b>${C ? C.label : ''}</b> · pair 1, device removed<br><span class="k">A condition none of them practised</span>`; }
+  if (state.tab === 'cond') { const C = condItem(state.cond); t = `<b>${C ? C.label : ''}</b> · pair 1, hip device off<br><span class="k">A condition none of them practised</span>`; }
   if (state.tab === 'oct') { const R = CAT.oct23.find((r) => r.key === state.oct); t = `<b>${R.title}</b> · 23 Oct slides<br><span class="k">Recorded 22 Oct, before the 25 Oct simulator corrections</span>`; }
   $('#hudTitle').innerHTML = t;
 }
@@ -385,6 +385,13 @@ function labelTexts() {
 // ---------------------------------------------------------------------------------------------------------------
 const chart = { series: [], x0: 38, x1: 0, y0: 0, y1: 0, ymin: 0, ymax: 1, img: null };
 
+function chartRegs() {
+  if (state.tab !== 'main' || state.chart !== 'gap') return [];
+  const P = CAT.main.pairs.find((p) => p.k === state.pair);
+  const vals = state.deviceOn ? P.reg_on : P.reg;
+  return runners.filter((r) => r.visible && vals[r.key] !== undefined).map((r) => ({ color: r.color, v: vals[r.key] }));
+}
+
 function buildChart() {
   const cv = $('#chart');
   const dpr = window.devicePixelRatio || 1;
@@ -402,13 +409,15 @@ function buildChart() {
     return { r, t: r.run.t, y, n };
   });
   let lo = isGap ? -0.2 : 0, hi = isGap ? 0.2 : 1;
+  const regs = chartRegs();
+  for (const g of regs) { lo = Math.min(lo, g.v); hi = Math.max(hi, g.v); }
   for (const s of chart.series) {
     if (!s.r.visible) continue;
     for (let f = 0; f < s.n; f++) { lo = Math.min(lo, s.y[f]); hi = Math.max(hi, s.y[f]); }
   }
   const pad = (hi - lo) * 0.08;
   chart.ymin = lo - pad; chart.ymax = hi + pad;
-  Object.assign(chart, { x0: 38, x1: W - 10, y0: 10, y1: H - 22, W, H, dpr });
+  Object.assign(chart, { x0: 38, x1: W - (regs.length ? 12 + 8 * regs.length : 10), y0: 10, y1: H - 22, W, H, dpr });
   // static part, drawn once and cached
   g.clearRect(0, 0, W, H);
   g.font = '11px "Segoe UI", system-ui, sans-serif';
@@ -431,6 +440,14 @@ function buildChart() {
     for (let f = 0; f < s.n; f++) { const x = cx(s.t[f] - s.t[0]), y = cy(s.y[f]); if (f) g.lineTo(x, y); else g.moveTo(x, y); }
     g.stroke(); g.globalAlpha = 1;
   }
+  regs.forEach((r, k) => {
+    const x = chart.x1 + 8 + 8 * k, y = cy(r.v);
+    g.fillStyle = r.color; g.strokeStyle = '#fff'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 4.5, y); g.lineTo(x, y + 6); g.lineTo(x - 4.5, y); g.closePath(); g.fill(); g.stroke();
+  });
+  $('#chartNote').textContent = regs.length
+    ? `◆ right edge: this pair's registered gain over its twin (${CAT.main.n_starts} starts, two repeats). Click the chart to jump to a moment.`
+    : 'Click the chart to jump to that moment.';
   chart.img = g.getImageData(0, 0, cv.width, cv.height);
 }
 
@@ -517,7 +534,7 @@ function buildExplain() {
       on = `<div class="note">Device on, as during practice. Registered means over ${M.n_pairs} pairs, relative to the twin without a device: ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].label.toLowerCase()} <span class="num">${sg(M.reg_on[a])} m</span>`).join(', ')}. For this pair: ${['dev', 'mix', 'brake'].map((a) => `${CAT.arms[a].short.toLowerCase()} ${sg(P.reg_on[a])} m`).join(', ')}.</div>`;
     }
     el.innerHTML = `<h2>What you are watching</h2>
-      <p>Each of the ${M.n_pairs} pairs began from one of ${M.n_bases} trained sprinters (${M.n_pairs / M.n_bases} pairs each). Every copy then practised for the same ${CAT.practice_steps.toLocaleString('en')} training iterations in a different way. In the registered main test they race <b>with the device removed</b>, from the same start, for 10 s.</p>
+      <p>Each of the ${M.n_pairs} pairs began from one of ${M.n_bases} trained sprinters (${M.n_pairs / M.n_bases} pairs each). Every copy then practised for the same ${CAT.practice_steps.toLocaleString('en')} training iterations in a different way. Here they race for 10 s <b>with the device removed</b>, as in the registered main test, all from the same start.</p>
       <ul class="how">${['base', 'twin', 'mix', 'brake', 'dev'].map((a) => `<li><span style="color:${CAT.arms[a].color}">●</span> <b>${CAT.arms[a].label}:</b> ${CAT.arms[a].about}</li>`).join('')}</ul>
       ${on}
       <h3>Registered result, all ${M.n_pairs} pairs</h3>
@@ -533,7 +550,7 @@ function buildExplain() {
     el.innerHTML = `<h2>${C.label}</h2>
       <p>${C.desc}</p>
       <ul class="how">${['twin', 'mix', 'brake', 'dev'].map((a) => `<li><span style="color:${CAT.arms[a].color}">●</span> <b>${CAT.arms[a].label}:</b> ${CAT.arms[a].about}</li>`).join('')}</ul>
-      <p>The same four pair-1 sprinters as in the main test, device removed, tested under a condition none of them practised.</p>
+      <p>The same four pair-1 sprinters as in the main test, with the hip device off, tested under a condition none of them practised.</p>
       ${C.reg ? `<h3>Registered gain over the twin under this condition (${M.n_pairs} pairs)</h3>
       <ul><li>${CAT.arms.mix.label}: ${ci(C.reg.mix)}</li><li>${CAT.arms.brake.label}: ${ci(C.reg.brake)}</li></ul>
       <p class="fine">Main test, measured again with the same evaluator: device in half ${ci(R.mix)}, brake in half ${ci(R.brake)}.</p>` : ''}
