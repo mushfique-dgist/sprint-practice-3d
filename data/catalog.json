@@ -1,5 +1,5 @@
 {
- "built": "2026-10-30 00:26 KST",
+ "built": "2026-10-30 01:14 KST",
  "practice_steps": 20000,
  "arms": {
   "base": {
@@ -71,7 +71,11 @@
      "brake": "runs/p2_brake_off.bin.gz",
      "dev": "runs/p2_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p2_mix_on.bin.gz",
+     "brake": "runs/p2_brake_on.bin.gz",
+     "dev": "runs/p2_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.8602,
      "brake": 1.6081,
@@ -93,7 +97,11 @@
      "brake": "runs/p3_brake_off.bin.gz",
      "dev": "runs/p3_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p3_mix_on.bin.gz",
+     "brake": "runs/p3_brake_on.bin.gz",
+     "dev": "runs/p3_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 0.5661,
      "brake": 0.096,
@@ -115,7 +123,11 @@
      "brake": "runs/p4_brake_off.bin.gz",
      "dev": "runs/p4_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p4_mix_on.bin.gz",
+     "brake": "runs/p4_brake_on.bin.gz",
+     "dev": "runs/p4_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.9574,
      "brake": 1.8328,
@@ -137,7 +149,11 @@
      "brake": "runs/p5_brake_off.bin.gz",
      "dev": "runs/p5_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p5_mix_on.bin.gz",
+     "brake": "runs/p5_brake_on.bin.gz",
+     "dev": "runs/p5_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.3416,
      "brake": 2.0523,
@@ -156,9 +172,14 @@
      "base": "runs/base3_off.bin.gz",
      "twin": "runs/p6_twin_off.bin.gz",
      "mix": "runs/p6_mix_off.bin.gz",
-     "brake": "runs/p6_brake_off.bin.gz"
+     "brake": "runs/p6_brake_off.bin.gz",
+     "dev": "runs/p6_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p6_mix_on.bin.gz",
+     "brake": "runs/p6_brake_on.bin.gz",
+     "dev": "runs/p6_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 0.8395,
      "brake": 0.7169,
@@ -174,9 +195,17 @@
     "k": 7,
     "base": 1,
     "off": {
-     "base": "runs/base1_off.bin.gz"
+     "base": "runs/base1_off.bin.gz",
+     "twin": "runs/p7_twin_off.bin.gz",
+     "mix": "runs/p7_mix_off.bin.gz",
+     "brake": "runs/p7_brake_off.bin.gz",
+     "dev": "runs/p7_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p7_mix_on.bin.gz",
+     "brake": "runs/p7_brake_on.bin.gz",
+     "dev": "runs/p7_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.9464,
      "brake": 1.4538,
@@ -192,9 +221,17 @@
     "k": 8,
     "base": 2,
     "off": {
-     "base": "runs/base2_off.bin.gz"
+     "base": "runs/base2_off.bin.gz",
+     "twin": "runs/p8_twin_off.bin.gz",
+     "mix": "runs/p8_mix_off.bin.gz",
+     "brake": "runs/p8_brake_off.bin.gz",
+     "dev": "runs/p8_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p8_mix_on.bin.gz",
+     "brake": "runs/p8_brake_on.bin.gz",
+     "dev": "runs/p8_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.3867,
      "brake": 1.3026,
@@ -210,9 +247,17 @@
     "k": 9,
     "base": 3,
     "off": {
-     "base": "runs/base3_off.bin.gz"
+     "base": "runs/base3_off.bin.gz",
+     "twin": "runs/p9_twin_off.bin.gz",
+     "mix": "runs/p9_mix_off.bin.gz",
+     "brake": "runs/p9_brake_off.bin.gz",
+     "dev": "runs/p9_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p9_mix_on.bin.gz",
+     "brake": "runs/p9_brake_on.bin.gz",
+     "dev": "runs/p9_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.0032,
      "brake": 0.209,
@@ -228,9 +273,17 @@
     "k": 10,
     "base": 1,
     "off": {
-     "base": "runs/base1_off.bin.gz"
+     "base": "runs/base1_off.bin.gz",
+     "twin": "runs/p10_twin_off.bin.gz",
+     "mix": "runs/p10_mix_off.bin.gz",
+     "brake": "runs/p10_brake_off.bin.gz",
+     "dev": "runs/p10_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p10_mix_on.bin.gz",
+     "brake": "runs/p10_brake_on.bin.gz",
+     "dev": "runs/p10_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.016,
      "brake": 0.9757,
@@ -246,9 +299,17 @@
     "k": 11,
     "base": 2,
     "off": {
-     "base": "runs/base2_off.bin.gz"
+     "base": "runs/base2_off.bin.gz",
+     "twin": "runs/p11_twin_off.bin.gz",
+     "mix": "runs/p11_mix_off.bin.gz",
+     "brake": "runs/p11_brake_off.bin.gz",
+     "dev": "runs/p11_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p11_mix_on.bin.gz",
+     "brake": "runs/p11_brake_on.bin.gz",
+     "dev": "runs/p11_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.6305,
      "brake": 1.6634,
@@ -264,9 +325,17 @@
     "k": 12,
     "base": 3,
     "off": {
-     "base": "runs/base3_off.bin.gz"
+     "base": "runs/base3_off.bin.gz",
+     "twin": "runs/p12_twin_off.bin.gz",
+     "mix": "runs/p12_mix_off.bin.gz",
+     "brake": "runs/p12_brake_off.bin.gz",
+     "dev": "runs/p12_dev_off.bin.gz"
     },
-    "on": {},
+    "on": {
+     "mix": "runs/p12_mix_on.bin.gz",
+     "brake": "runs/p12_brake_on.bin.gz",
+     "dev": "runs/p12_dev_on.bin.gz"
+    },
     "reg": {
      "mix": 1.3816,
      "brake": 0.2239,
@@ -388,17 +457,17 @@
        }
       },
       "runs": {
-       "twin": "runs/p1_twin_f2.bin.gz",
-       "mix": "runs/p1_mix_f2.bin.gz",
-       "brake": "runs/p1_brake_f2.bin.gz",
-       "dev": "runs/p1_dev_f2.bin.gz"
+       "twin": "runs/p1_twin_f2_s3.bin.gz",
+       "mix": "runs/p1_mix_f2_s3.bin.gz",
+       "brake": "runs/p1_brake_f2_s3.bin.gz",
+       "dev": "runs/p1_dev_f2_s3.bin.gz"
       },
       "available": true,
       "gear": null,
       "force": true,
       "unregistered": [],
       "notes": [
-       "Pushes are random. Shown: run seed 1, the first of seeds 1 to 5 in which none of the four fell (a rule fixed before these recordings); In the registered test under pushes, 84% of the twins' runs ended early (a fall), against 80% for the device-in-half and 82% for the brake-in-half sprinters; the registered gain leaves runs that ended early out of both means."
+       "Pushes are random. Shown: run seed 3, the first of seeds 1 to 5 in which none of the four fell (a rule fixed before these recordings); with seeds 1 and 2 all four fell. In the registered test under pushes, 84% of the twins' runs ended early (a fall), against 80% for the device-in-half and 82% for the brake-in-half sprinters; the registered gain leaves runs that ended early out of both means."
       ]
      },
      {
@@ -473,8 +542,13 @@
         "hi": 1.4484720612932855
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_dplus.bin.gz",
+       "mix": "runs/p1_mix_dplus.bin.gz",
+       "brake": "runs/p1_brake_dplus.bin.gz",
+       "dev": "runs/p1_dev_dplus.bin.gz"
+      },
+      "available": true,
       "gear": "hip_brake",
       "force": false,
       "unregistered": [
@@ -500,8 +574,13 @@
         "hi": 1.3340330274974614
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_dminus.bin.gz",
+       "mix": "runs/p1_mix_dminus.bin.gz",
+       "brake": "runs/p1_brake_dminus.bin.gz",
+       "dev": "runs/p1_dev_dminus.bin.gz"
+      },
+      "available": true,
       "gear": "hip_assist",
       "force": false,
       "unregistered": [
@@ -624,8 +703,13 @@
         "hi": 1.3602819456890467
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_aminus.bin.gz",
+       "mix": "runs/p1_mix_aminus.bin.gz",
+       "brake": "runs/p1_brake_aminus.bin.gz",
+       "dev": "runs/p1_dev_aminus.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [
@@ -651,8 +735,13 @@
         "hi": 1.3533528674883946
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_aplus.bin.gz",
+       "mix": "runs/p1_mix_aplus.bin.gz",
+       "brake": "runs/p1_brake_aplus.bin.gz",
+       "dev": "runs/p1_dev_aplus.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [
@@ -678,8 +767,13 @@
         "hi": 1.1689660125717933
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_lminus.bin.gz",
+       "mix": "runs/p1_mix_lminus.bin.gz",
+       "brake": "runs/p1_brake_lminus.bin.gz",
+       "dev": "runs/p1_dev_lminus.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [
@@ -705,8 +799,13 @@
         "hi": 2.1532202742097675
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_lplus.bin.gz",
+       "mix": "runs/p1_mix_lplus.bin.gz",
+       "brake": "runs/p1_brake_lplus.bin.gz",
+       "dev": "runs/p1_dev_lplus.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [
@@ -737,8 +836,13 @@
         "hi": 1.5134446188614528
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_notoe.bin.gz",
+       "mix": "runs/p1_mix_notoe.bin.gz",
+       "brake": "runs/p1_brake_notoe.bin.gz",
+       "dev": "runs/p1_dev_notoe.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [],
@@ -760,8 +864,13 @@
         "hi": 1.2920129090169497
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_limit05.bin.gz",
+       "mix": "runs/p1_mix_limit05.bin.gz",
+       "brake": "runs/p1_brake_limit05.bin.gz",
+       "dev": "runs/p1_dev_limit05.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [],
@@ -783,8 +892,13 @@
         "hi": 1.4943825267823172
        }
       },
-      "runs": {},
-      "available": false,
+      "runs": {
+       "twin": "runs/p1_twin_mtpspring05.bin.gz",
+       "mix": "runs/p1_mix_mtpspring05.bin.gz",
+       "brake": "runs/p1_brake_mtpspring05.bin.gz",
+       "dev": "runs/p1_dev_mtpspring05.bin.gz"
+      },
+      "available": true,
       "gear": null,
       "force": false,
       "unregistered": [],
