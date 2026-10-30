@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { frameAt } from './data.js?v=202610300247';
+import { frameAt } from './data.js?v=202610301312';
 
 export const LANE_W = 1.22;
 export const laneZ = (lane) => (lane - 4.5) * LANE_W;
@@ -55,9 +55,14 @@ export class Stage {
     canvas.className = 'gl';
     container.prepend(canvas);
     const r = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // at most 1.5 device pixels per CSS pixel; lowered further (to 1) by lowerQuality() when frames are slow
+    this.maxDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    r.setPixelRatio(this.maxDpr);
     r.shadowMap.enabled = true;
     r.shadowMap.type = THREE.PCFShadowMap;
+    r.shadowMap.autoUpdate = false;   // refreshed every other drawn frame in render()
+    this.shadowTick = 0;
+    this.onWake = null;               // set by the app: asks for frames to be drawn for a short while
     r.toneMapping = THREE.NeutralToneMapping;
     r.toneMappingExposure = 1.0;
     this.maxAniso = r.capabilities.getMaxAnisotropy();
@@ -77,11 +82,12 @@ export class Stage {
     this.controls.maxPolarAngle = Math.PI * 0.495;
     this.controls.minDistance = 1.2;
     this.controls.maxDistance = 120;
+    this.controls.addEventListener('change', () => this.onWake && this.onWake(800));
 
     s.add(new THREE.HemisphereLight(new THREE.Color('#eef5ff'), new THREE.Color('#7d8f5c'), 1.5));
     const sun = this.sun = new THREE.DirectionalLight(new THREE.Color('#fff4e2'), 2.6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.mapSize.set(1024, 1024);
     const sc = sun.shadow.camera;
     sc.left = -16; sc.right = 16; sc.top = 12; sc.bottom = -12; sc.near = 1; sc.far = 90;
     sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.025; sun.shadow.radius = 3;
@@ -110,7 +116,9 @@ export class Stage {
   resize() {
     const w = this.container.clientWidth, h = this.container.clientHeight;
     if (!w || !h) return;
+    this.W = w; this.H = h;   // cached so that per-frame code never reads layout
     this.renderer.setSize(w, h, false);
+    if (this.onWake) this.onWake();
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
   }
@@ -222,11 +230,11 @@ export class Stage {
   buildMuscles() {
     this.muscleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.42, metalness: 0 });
     this.segIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 10, 1, true), this.muscleMat, 2600);
-    this.ptIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 7), this.muscleMat, 3400);
+    this.ptIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 5), this.muscleMat, 3400);
     for (const im of [this.segIM, this.ptIM]) {
       im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       im.frustumCulled = false;
-      im.castShadow = true;
+      im.castShadow = false;   // the bones' shadow is enough; muscle shadows doubled the most expensive pass
       im.setColorAt(0, BONE);
       im.count = 0;
       this.scene.add(im);
@@ -538,20 +546,26 @@ export class Stage {
   }
 
   updateLabels(info) {
-    // place each tag above its sprinter, then push overlapping tags upward (the lowest tag keeps its place)
-    const w = this.container.clientWidth, h = this.container.clientHeight;
+    // place each tag above its sprinter, then push overlapping tags upward (the lowest tag keeps its place).
+    // Sizes are measured only after a tag's text changes, all in one pass after the writes, so drawing a frame never
+    // forces a layout per tag.
+    const w = this.W || this.container.clientWidth, h = this.H || this.container.clientHeight;
     const v = new THREE.Vector3();
-    const placed = [];
+    const placed = [], measure = [];
     for (const r of this.runners) {
       const el = r.tag;
-      if (!this.opts.labels || r.visible === false || r.shown === false) { el.style.display = 'none'; continue; }
+      const hide = () => { if (el.style.display !== 'none') el.style.display = 'none'; };
+      if (!this.opts.labels || r.visible === false || r.shown === false) { hide(); continue; }
       v.set(r.x, 2.0, r.z).project(this.camera);
-      if (v.z > 1 || v.z < -1) { el.style.display = 'none'; continue; }
-      el.style.display = '';
+      if (v.z > 1 || v.z < -1) { hide(); continue; }
+      if (el.style.display === 'none') { el.style.display = ''; r.tagW = 0; }
       const t = info && info[r.i];
-      if (t) el.querySelector('.d').textContent = t;
-      placed.push({ el, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h, wd: el.offsetWidth || 120, ht: el.offsetHeight || 22 });
+      if (t && t !== r.tagText) { r.tagText = t; el.querySelector('.d').textContent = t; r.tagW = 0; }
+      if (!r.tagW) measure.push(r);
+      placed.push({ r, el, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h });
     }
+    for (const r of measure) { r.tagW = r.tag.offsetWidth || 120; r.tagH = r.tag.offsetHeight || 22; }
+    for (const p of placed) { p.wd = p.r.tagW; p.ht = p.r.tagH; }
     placed.sort((a, b) => b.y - a.y);
     const done = [];
     for (const p of placed) {
@@ -563,8 +577,21 @@ export class Stage {
         }
       }
       done.push(p);
-      p.el.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) translate(-50%, -100%)`;
+      const tr = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) translate(-50%, -100%)`;
+      if (p.r.tagTr !== tr) { p.r.tagTr = tr; p.el.style.transform = tr; }
     }
+  }
+
+  // true while a camera transition is still running, so the app keeps drawing until it ends
+  busy() { return this.camBlend < 1; }
+
+  // slower frames: one step down in resolution (1.5 -> 1.25 -> 1 device pixels per CSS pixel); false when at the floor
+  lowerQuality() {
+    const d = this.renderer.getPixelRatio();
+    if (d <= 1.0001) return false;
+    this.renderer.setPixelRatio(Math.max(1, d - 0.25));
+    this.resize();
+    return true;
   }
 
   render(dt) {
@@ -573,6 +600,8 @@ export class Stage {
     this.sun.position.set(F.x - 9, 26, F.z + 15);
     this.sun.castShadow = this.opts.shadows;
     this.frameCamera(dt);
+    // the shadows follow the runners at half the frame rate, which is not visible and halves the shadow pass
+    this.renderer.shadowMap.needsUpdate = this.opts.shadows && (this.shadowTick++ % 2 === 0);
     this.renderer.render(this.scene, this.camera);
   }
 }

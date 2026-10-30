@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202610300247';
-import { Stage, activationColor } from './scene.js?v=202610300247';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202610301312';
+import { Stage, activationColor } from './scene.js?v=202610301312';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -45,6 +45,13 @@ async function init() {
   readHash();
   const bones = await loadBones('data/bones.bin.gz');
   stage = new Stage($('#stage'), bones);
+  stage.onWake = wake;
+  // any input may change what is shown: draw for a short while after it, then stop (the page is idle when paused)
+  for (const ev of ['pointerdown', 'wheel', 'keydown', 'input', 'change', 'click', 'touchstart']) {
+    document.addEventListener(ev, () => wake(), { capture: true, passive: true });
+  }
+  document.addEventListener('pointermove', (e) => { if (e.buttons) wake(800); }, { capture: true, passive: true });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
   wireControls();
   buildResults();
   buildFilms();
@@ -52,7 +59,7 @@ async function init() {
   await showTab(state.tab, true);
   setupIntro();
   setInterval(checkUpdate, 5 * 60 * 1000);
-  requestAnimationFrame(loop);
+  kick();
 }
 
 function readHash() {
@@ -151,6 +158,7 @@ async function loadScenario() {
   buildHud();
   $('#loading').hidden = true;
   writeHash();
+  wake();   // new recordings: draw them (a paused page otherwise draws nothing)
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -763,11 +771,31 @@ function buildAbout() {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-let last = performance.now();
+// Drawing policy: frames are drawn only while something moves (the race plays, input in the last 2 s, or a camera
+// transition), and at most about 60 a second whatever the screen's refresh rate. A paused page draws nothing.
+let lastDraw = 0, awakeUntil = 0, lastSlow = 0, qN = 0, qT0 = 0, looping = false;
+const FRAME_MS = 1000 / 60 - 1.5;
+function wake(ms = 2000) { awakeUntil = Math.max(awakeUntil, performance.now() + ms); kick(); }
+// the frame loop runs only while there is something to draw; when idle it stops entirely and the next wake restarts it
+function kick() { if (!looping) { looping = true; requestAnimationFrame(loop); } }
+
+function quality(now) {
+  // while playing, measure the drawn frame rate over about 1.5 s; below 40 a second, lower the resolution one step
+  if (!state.playing) { qN = 0; return; }
+  if (qN === 0) qT0 = now;
+  if (++qN < 90) return;
+  const fps = 1000 * (qN - 1) / (now - qT0);
+  qN = 0;
+  if (fps < 40) stage.lowerQuality();
+}
+
 function loop(now) {
-  const dt = Math.min((now - last) / 1000, 0.1);
-  last = now;
-  if (!$('#viewer').hidden && runners.length) {
+  if ($('#viewer').hidden || !runners.length || (!state.playing && now > awakeUntil && !stage.busy())) { looping = false; return; }
+  requestAnimationFrame(loop);
+  if (now - lastDraw < FRAME_MS) return;
+  const dt = now - lastDraw > 250 ? 0 : Math.min((now - lastDraw) / 1000, 0.1);   // no jump after an idle spell
+  lastDraw = now;
+  {
     if (state.playing) {
       state.time += dt * state.speed;
       if (state.time >= state.dur) {
@@ -778,13 +806,16 @@ function loop(now) {
     stage.update(state.time);
     stage.render(dt);
     stage.updateLabels(labelTexts());
-    $('#time').value = state.time.toFixed(3);
-    $('#clock').textContent = `${state.time.toFixed(2)} s`;
+    if (now - lastSlow > 33) {   // readouts and chart at about 30 a second
+      lastSlow = now;
+      $('#time').value = state.time.toFixed(3);
+      $('#clock').textContent = `${state.time.toFixed(2)} s`;
+      drawChart();
+    }
     updateBoard(now);
-    drawChart();
     updateMuscles(now);
+    quality(now);
   }
-  requestAnimationFrame(loop);
 }
 
 window.addEventListener('resize', () => { if (runners.length) buildChart(); });
