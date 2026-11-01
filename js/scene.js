@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { frameAt } from './data.js?v=202610301312';
+import { frameAt } from './data.js?v=202611011827';
 
 export const LANE_W = 1.22;
 export const laneZ = (lane) => (lane - 4.5) * LANE_W;
@@ -60,9 +60,13 @@ export class Stage {
     r.setPixelRatio(this.maxDpr);
     r.shadowMap.enabled = true;
     r.shadowMap.type = THREE.PCFShadowMap;
-    r.shadowMap.autoUpdate = false;   // refreshed every other drawn frame in render()
-    this.shadowTick = 0;
-    this.onWake = null;               // set by the app: asks for frames to be drawn for a short while
+    // Refreshed on every drawn frame. Refreshing every other frame made the bones lag one frame behind the muscles in
+    // motion: three.js r186 uploads instance matrices once per frame, keyed by a frame counter it advances after
+    // projecting the scene, so a shadow caster updated by the previous frame's shadow pass is skipped by the next
+    // frame's projection and, without a shadow pass, drawn with last frame's matrices (the muscles cast no shadow and
+    // were always current).
+    r.shadowMap.autoUpdate = true;
+    this.onWake = null;              // set by the app: asks for frames to be drawn for a short while
     r.toneMapping = THREE.NeutralToneMapping;
     r.toneMappingExposure = 1.0;
     this.maxAniso = r.capabilities.getMaxAnisotropy();
@@ -477,8 +481,16 @@ export class Stage {
     const sel = this.runners[this.selected] || vis[0];
     const target = (hi + lo) / 2;
     const k = 1 - Math.exp(-dt * 5);
-    if (this.lastFocusX === null || Math.abs(target - this.focus.x) > 8) { this.focus.x = target; this.spread = hi - lo; }
-    else { this.focus.x += (target - this.focus.x) * k; this.spread += ((hi - lo) - this.spread) * k; }
+    // The focus moves with the runners exactly and eases out only an offset left by a change of who is framed (runners
+    // shown or hidden, another selection), so the camera no longer trails a sprinter by speed / 5 (2.4 m at 12 m/s).
+    const key = vis.map((r) => r.i).join(',') + '|' + this.selected;
+    if (this.lastFocusX === null || Math.abs(target - this.focus.x) > 8) { this.focusOff = 0; this.spread = hi - lo; }
+    else {
+      this.focusOff = key !== this.focusKey ? this.focus.x - target : (this.focusOff || 0) * (1 - k);
+      this.spread += ((hi - lo) - this.spread) * k;
+    }
+    this.focusKey = key;
+    this.focus.x = target + this.focusOff;
     const prevX = this.lastFocusX;
     this.lastFocusX = this.focus.x;
     this.focus.z += (zMid - this.focus.z) * (this.lastZ === undefined ? 1 : k);
@@ -487,7 +499,11 @@ export class Stage {
     let pos, look, up = new THREE.Vector3(0, 1, 0), fov = 36;
     switch (this.view) {
       case 'gait': {
-        this.gaitX = this.gaitX === undefined || Math.abs(sel.x - this.gaitX) > 8 ? sel.x : this.gaitX + (sel.x - this.gaitX) * k;
+        // the close view rides with the selected sprinter; a new selection eases over from the previous framing
+        if (this.gaitX === undefined || Math.abs(sel.x - this.gaitX) > 8) this.gaitOff = 0;
+        else this.gaitOff = sel !== this.gaitSel ? this.gaitX - sel.x : (this.gaitOff || 0) * (1 - k);
+        this.gaitSel = sel;
+        this.gaitX = sel.x + this.gaitOff;
         pos = new THREE.Vector3(this.gaitX + 0.25, 1.05, sel.z + 4.4);
         look = new THREE.Vector3(this.gaitX + 0.25, 0.9, sel.z);
         fov = 34;
@@ -600,8 +616,6 @@ export class Stage {
     this.sun.position.set(F.x - 9, 26, F.z + 15);
     this.sun.castShadow = this.opts.shadows;
     this.frameCamera(dt);
-    // the shadows follow the runners at half the frame rate, which is not visible and halves the shadow pass
-    this.renderer.shadowMap.needsUpdate = this.opts.shadows && (this.shadowTick++ % 2 === 0);
     this.renderer.render(this.scene, this.camera);
   }
 }

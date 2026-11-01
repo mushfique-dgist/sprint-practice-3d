@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202610301312';
-import { Stage, activationColor } from './scene.js?v=202610301312';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202611011827';
+import { Stage, activationColor } from './scene.js?v=202611011827';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -772,9 +772,10 @@ function buildAbout() {
 
 // ---------------------------------------------------------------------------------------------------------------
 // Drawing policy: frames are drawn only while something moves (the race plays, input in the last 2 s, or a camera
-// transition), and at most about 60 a second whatever the screen's refresh rate. A paused page draws nothing.
+// transition), one per screen refresh, so motion is as smooth as the display allows (a fixed 60 a second cap drew
+// every third refresh, 48 a second, on a 144 Hz screen). A paused page draws nothing; slow frames lower the
+// resolution (quality below).
 let lastDraw = 0, awakeUntil = 0, lastSlow = 0, qN = 0, qT0 = 0, looping = false;
-const FRAME_MS = 1000 / 60 - 1.5;
 function wake(ms = 2000) { awakeUntil = Math.max(awakeUntil, performance.now() + ms); kick(); }
 // the frame loop runs only while there is something to draw; when idle it stops entirely and the next wake restarts it
 function kick() { if (!looping) { looping = true; requestAnimationFrame(loop); } }
@@ -792,7 +793,6 @@ function quality(now) {
 function loop(now) {
   if ($('#viewer').hidden || !runners.length || (!state.playing && now > awakeUntil && !stage.busy())) { looping = false; return; }
   requestAnimationFrame(loop);
-  if (now - lastDraw < FRAME_MS) return;
   const dt = now - lastDraw > 250 ? 0 : Math.min((now - lastDraw) / 1000, 0.1);   // no jump after an idle spell
   lastDraw = now;
   {
