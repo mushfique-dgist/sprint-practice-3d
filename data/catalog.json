@@ -1,5 +1,5 @@
 {
- "built": "2026-11-01 18:27 KST",
+ "built": "2026-11-22 04:32 KST",
  "practice_steps": 20000,
  "arms": {
   "base": {
@@ -1433,7 +1433,7 @@
    "clip": true
   }
  ],
- "oct23_note": "Recorded on 22 Oct with the simulator before its 25 Oct corrections: these are the runs behind the 23 Oct videos, not this week's results. As in those videos, the race stops when the shortest recording ends. Distances here are the forward travel of the pelvis; the 23 Oct videos showed the centre of mass, so the numbers can differ slightly.",
+ "oct23_note": "Recorded on 22 Oct with the simulator before its 25 Oct corrections: these are the runs behind the 23 Oct videos, not the main test's results. As in those videos, the race stops when the shortest recording ends. Distances here are the forward travel of the pelvis; the 23 Oct videos showed the centre of mass, so the numbers can differ slightly.",
  "films": [
   {
    "file": "media/oct23_2d_controllers.mp4",
@@ -1472,7 +1472,7 @@
    "desc": "Rendered in 3D (Blender, Cycles) from the same recordings; muscles go from blue (relaxed) to red (fully active)."
   }
  ],
- "films_lead": "The three race videos of 23 Oct, each next to a 3D render of the same recordings. They were recorded on 22 Oct with the simulator before its 25 Oct corrections, so they show the earlier setup, not this week's results.",
+ "films_lead": "The three race videos of 23 Oct, each next to a 3D render of the same recordings. They were recorded on 22 Oct with the simulator before its 25 Oct corrections, so they show the earlier setup, not the main test's results.",
  "b0": {
   "recipes": [
    {
@@ -1540,11 +1540,195 @@
  ],
  "about": [
   "<h2>About this page</h2>",
-  "The sprinters are the Bolt sprinter model (NVIDIA Warp physics, 136 muscles) controlled by neural networks trained with reinforcement learning. The main test and the changed conditions come from this week's trained networks, the 23 Oct races from the runs of 22 Oct. Each network was run once in the simulator from the same start, and its bones and muscle paths were recorded 30 times per second.",
+  "The sprinters are the Bolt sprinter model (NVIDIA Warp physics, 136 muscles) controlled by neural networks trained with reinforcement learning. The main test and the changed conditions come from the networks trained in the week of 26 to 30 October 2026, the 23 Oct races from the runs of 22 Oct, the November runners from 17 to 21 November. Each network was run once in the simulator from the same start, and its bones and muscle paths were recorded 30 times per second.",
   "Practice: starting from one of 3 trained sprinters, every copy trained 20,000 more iterations. The twin trained without a device; the others with a hip device whose torque (up to 25 N·m per hip) is set by the sprinter's own network, on in half of the runs or in all of them, or with a resisting hip torque (a brake) in half of the runs.",
   "The registered numbers are those of the lab meeting slides of 30 Oct, read from the same analysis files. The tests and their decision rules were registered before the runs.",
   "A repeat recording of the same sprinter can differ by about a tenth of a metre, because the simulation is sensitive to tiny numerical differences; pair 1's twin and device-in-half sprinter are the recordings shown in the slides.",
   "Distance is the forward travel of the pelvis since the start, as in the evaluation. Muscle colour shows activation, from blue (relaxed) to red (fully active); muscle thickness grows with the muscle's maximum force.",
+  "<h3>The November runners</h3>",
+  "Since 30 October the work has been about how closely the simulated sprinter moves like measured sprinters: the unchanged runner and two changed bodies (P and Q) were trained in several runs and compared with published measurements. No body passes as a sprinter yet. The tab <b>November runners</b> shows these runners as they are, one recorded start each; it makes no statement about a fitted body or about the device. The Main test, Changed conditions and Results tabs are unchanged since 30 October and describe this simulator's sprinter, not people.",
   "Preliminary results for discussion in the lab; please do not cite or circulate."
- ]
+ ],
+ "nov": {
+  "title": "Runners of 17 to 21 November",
+  "pick": "Runners from the work on how closely the simulated sprinter moves like measured sprinters. Pick a scene; the number on the right is how many runners it shows.",
+  "hud": "One recorded start per runner · no body passes as a sprinter yet · not a result",
+  "state": "<b>State on 21 November 2026: no body passes as a sprinter yet.</b> Each runner here is a trained network on a body that is still being checked against measured sprinters. Nothing in this tab is a result about a fitted body or about the device.",
+  "board": "One recorded start per runner (exact start pose). These distances are not registered results.",
+  "fine": "Each runner is one 10 s recording of a trained network in the Bolt simulator (bones, muscle paths and activations, 30 frames a second), made from the same checkpoint and settings as the stride pictures used in the lab.",
+  "groups": [
+   {
+    "title": "Bodies",
+    "items": [
+     {
+      "key": "bodies",
+      "label": "The unchanged runner, body P and body Q",
+      "gap": false,
+      "desc": [
+       "Three bodies of the same simulated sprinter, each driven by its own trained network. The unchanged runner is shown twice, after 5,000 and after 20,000 iterations of practice; bodies P and Q after 20,000. The gap readouts are switched off because the runners did not all practise equally long.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "unchanged_twin_s1",
+        "file": "runs/nov_unchanged_twin_s1.bin.gz",
+        "label": "The unchanged runner, 5,000 iterations",
+        "short": "Unchanged, 5,000",
+        "color": "#5b6b7c",
+        "about": "The simulator's own sprinter body, nothing changed. Run 1: 5,000 iterations of practice from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "q3u_run1",
+        "file": "runs/nov_q3u_run1.bin.gz",
+        "label": "The unchanged body, 20,000 iterations",
+        "short": "Unchanged, 20,000",
+        "color": "#94a0ad",
+        "about": "The simulator's own sprinter body, nothing changed. Run 1: 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "bodyP_run1",
+        "file": "runs/nov_bodyP_run1.bin.gz",
+        "label": "Body P, run 1",
+        "short": "Body P",
+        "color": "#b45309",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run1",
+        "file": "runs/nov_bodyQ_run1.bin.gz",
+        "label": "Body Q, run 1",
+        "short": "Body Q",
+        "color": "#1a4f8a",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       }
+      ]
+     },
+     {
+      "key": "bodyp",
+      "label": "Body P, run beside run",
+      "ref": "bodyP_run1",
+      "desc": [
+       "Five separate training runs on body P, each practised 20,000 iterations from the same starting sprinter (run 2 has no recording of this kind). The same body and the same recipe: the differences between lanes are differences between training runs.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyP_run1",
+        "file": "runs/nov_bodyP_run1.bin.gz",
+        "label": "Body P, run 1",
+        "short": "P run 1",
+        "color": "#1a4f8a",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyP_run3",
+        "file": "runs/nov_bodyP_run3.bin.gz",
+        "label": "Body P, run 3",
+        "short": "P run 3",
+        "color": "#0f766e",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 3: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       }
+      ],
+      "notes": [
+       "3 of this scene's 5 runners are not recorded for the page yet."
+      ]
+     },
+     {
+      "key": "bodyq",
+      "label": "Body Q, run beside run",
+      "ref": "bodyQ_run1",
+      "desc": [
+       "Six separate training runs on body Q, each practised 20,000 iterations from the same starting sprinter. The same body and the same recipe: the differences between lanes are differences between training runs.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1",
+        "file": "runs/nov_bodyQ_run1.bin.gz",
+        "label": "Body Q, run 1",
+        "short": "Q run 1",
+        "color": "#1a4f8a",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run2",
+        "file": "runs/nov_bodyQ_run2.bin.gz",
+        "label": "Body Q, run 2",
+        "short": "Q run 2",
+        "color": "#0f766e",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 2: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run3",
+        "file": "runs/nov_bodyQ_run3.bin.gz",
+        "label": "Body Q, run 3",
+        "short": "Q run 3",
+        "color": "#b45309",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 3: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run4",
+        "file": "runs/nov_bodyQ_run4.bin.gz",
+        "label": "Body Q, run 4",
+        "short": "Q run 4",
+        "color": "#7c3aed",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 4: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       }
+      ],
+      "notes": [
+       "2 of this scene's 6 runners are not recorded for the page yet."
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Weaker-hip test",
+    "items": [
+     {
+      "key": "hip1",
+      "label": "Four bodies, run 1",
+      "gap": false,
+      "desc": [
+       "A test of one question: does the knee fold in the swing stay when the hip flexors are weaker? Four bodies, each practised 20,000 iterations from the same starting sprinter: the unchanged body and body Q without its hip-flexor change, each also with the hip flexors at half strength.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "q3u_run1",
+        "file": "runs/nov_q3u_run1.bin.gz",
+        "label": "Unchanged body, run 1",
+        "short": "Unchanged",
+        "color": "#5b6b7c",
+        "about": "The simulator's own sprinter body, nothing changed. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3h050_run1",
+        "file": "runs/nov_q3h050_run1.bin.gz",
+        "label": "Unchanged body, hip flexors at half strength, run 1",
+        "short": "Unchanged, weak hip",
+        "color": "#7c3aed",
+        "about": "The unchanged body with the eight hip flexors of each leg at half strength. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3c75_run1",
+        "file": "runs/nov_q3c75_run1.bin.gz",
+        "label": "Body Q without the hip-flexor change, run 1",
+        "short": "Q, normal hip",
+        "color": "#1a4f8a",
+        "about": "Body Q without the hip-flexor change: calf at 75 %, softer Achilles tendon, toe motor off, hip flexors as in the unchanged body. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3c75h050_run1",
+        "file": "runs/nov_q3c75h050_run1.bin.gz",
+        "label": "Body Q, hip flexors at half strength, run 1",
+        "short": "Q, weak hip",
+        "color": "#be185d",
+        "about": "Body Q without the hip-flexor change, and with the hip flexors at half strength. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
 }

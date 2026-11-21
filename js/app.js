@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261122042038';
-import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261122042038';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261122043224';
+import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261122043224';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);

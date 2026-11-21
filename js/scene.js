@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { frameAt } from './data.js?v=20261122042038';
+import { frameAt } from './data.js?v=20261122043224';
 
 export const LANE_W = 1.22;
 export const laneZ = (lane) => (lane - 4.5) * LANE_W;
