@@ -1,5 +1,5 @@
 {
- "built": "2026-11-22 04:32 KST",
+ "built": "2026-11-22 05:53 KST",
  "practice_steps": 20000,
  "arms": {
   "base": {
@@ -1627,10 +1627,31 @@
         "short": "P run 3",
         "color": "#0f766e",
         "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 3: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyP_run4",
+        "file": "runs/nov_bodyP_run4.bin.gz",
+        "label": "Body P, run 4",
+        "short": "P run 4",
+        "color": "#b45309",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 4: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyP_run5",
+        "file": "runs/nov_bodyP_run5.bin.gz",
+        "label": "Body P, run 5",
+        "short": "P run 5",
+        "color": "#7c3aed",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 5: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyP_run6",
+        "file": "runs/nov_bodyP_run6.bin.gz",
+        "label": "Body P, run 6",
+        "short": "P run 6",
+        "color": "#be185d",
+        "about": "Calf muscles at 53 % of the model's strength, the toe motor switched off, hip flexors 60 % stronger. Run 6: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
        }
-      ],
-      "notes": [
-       "3 of this scene's 5 runners are not recorded for the page yet."
       ]
      },
      {
@@ -1673,10 +1694,23 @@
         "short": "Q run 4",
         "color": "#7c3aed",
         "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 4: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run5",
+        "file": "runs/nov_bodyQ_run5.bin.gz",
+        "label": "Body Q, run 5",
+        "short": "Q run 5",
+        "color": "#be185d",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 5: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run6",
+        "file": "runs/nov_bodyQ_run6.bin.gz",
+        "label": "Body Q, run 6",
+        "short": "Q run 6",
+        "color": "#4d7c0f",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 6: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
        }
-      ],
-      "notes": [
-       "2 of this scene's 6 runners are not recorded for the page yet."
       ]
      }
     ]
@@ -1724,6 +1758,467 @@
         "short": "Q, weak hip",
         "color": "#be185d",
         "about": "Body Q without the hip-flexor change, and with the hip flexors at half strength. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       }
+      ]
+     },
+     {
+      "key": "hip2",
+      "label": "Four bodies, run 2",
+      "gap": false,
+      "desc": [
+       "A test of one question: does the knee fold in the swing stay when the hip flexors are weaker? Four bodies, each practised 20,000 iterations from the same starting sprinter: the unchanged body and body Q without its hip-flexor change, each also with the hip flexors at half strength.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "q3u_run2",
+        "file": "runs/nov_q3u_run2.bin.gz",
+        "label": "Unchanged body, run 2",
+        "short": "Unchanged",
+        "color": "#5b6b7c",
+        "about": "The simulator's own sprinter body, nothing changed. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3h050_run2",
+        "file": "runs/nov_q3h050_run2.bin.gz",
+        "label": "Unchanged body, hip flexors at half strength, run 2",
+        "short": "Unchanged, weak hip",
+        "color": "#7c3aed",
+        "about": "The unchanged body with the eight hip flexors of each leg at half strength. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3c75_run2",
+        "file": "runs/nov_q3c75_run2.bin.gz",
+        "label": "Body Q without the hip-flexor change, run 2",
+        "short": "Q, normal hip",
+        "color": "#1a4f8a",
+        "about": "Body Q without the hip-flexor change: calf at 75 %, softer Achilles tendon, toe motor off, hip flexors as in the unchanged body. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       },
+       {
+        "key": "q3c75h050_run2",
+        "file": "runs/nov_q3c75h050_run2.bin.gz",
+        "label": "Body Q, hip flexors at half strength, run 2",
+        "short": "Q, weak hip",
+        "color": "#be185d",
+        "about": "Body Q without the hip-flexor change, and with the hip flexors at half strength. 20,000 iterations, in four pieces of 5,000, from the same starting sprinter."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Arms (learner settings on body Q)",
+    "items": [
+     {
+      "key": "arms1",
+      "label": "Arm outputs re-started, run 1",
+      "ref": "e323_ctl_q1_k20",
+      "desc": [
+       "Settings of the learner, not of the body. On these runners many arm-muscle commands sit fully on or fully off. Here the arm outputs of the network were re-started, alone or together with a charge on the size of muscle commands, and practice went on.",
+       "What to look at: the arms (where they are held, how far they swing, whether they move against the opposite leg) and what happens to the distance."
+      ],
+      "runners": [
+       {
+        "key": "e323_ctl_q1_k20",
+        "file": "runs/nov_e323_ctl_q1_k20.bin.gz",
+        "label": "No change, run 1 (control)",
+        "short": "No change",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 1 at 20,000 iterations, practised 20,000 more iterations with nothing changed, in the same pieces as the runner beside it."
+       },
+       {
+        "key": "e323_c3_q1_k20",
+        "file": "runs/nov_e323_c3_q1_k20.bin.gz",
+        "label": "Arm outputs re-started, charge on command size 5 %, 20,000 iterations, run 1",
+        "short": "Re-start + charge, 20,000",
+        "color": "#be185d",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: the 44 arm-muscle outputs of the network were set back to small random values, and a charge on the size of all muscle commands (5 % of the speed reward) was added; 20,000 iterations after the re-start."
+       },
+       {
+        "key": "e323_c3_q1",
+        "file": "runs/nov_e323_c3_q1.bin.gz",
+        "label": "The same after 5,000 iterations, run 1",
+        "short": "Re-start + charge, 5,000",
+        "color": "#b45309",
+        "about": "The same setting as the runner beside it, recorded 5,000 iterations after the re-start."
+       },
+       {
+        "key": "e323_c1_q1",
+        "file": "runs/nov_e323_c1_q1.bin.gz",
+        "label": "Arm outputs re-started only, 5,000 iterations, run 1",
+        "short": "Re-start only",
+        "color": "#0f766e",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: only the 44 arm-muscle outputs were re-started; no charge; 5,000 iterations."
+       }
+      ]
+     },
+     {
+      "key": "arms2",
+      "label": "Arm outputs re-started, run 2",
+      "ref": "e323_ctl_q2_k20",
+      "desc": [
+       "Settings of the learner, not of the body. On these runners many arm-muscle commands sit fully on or fully off. Here the arm outputs of the network were re-started, alone or together with a charge on the size of muscle commands, and practice went on.",
+       "What to look at: the arms (where they are held, how far they swing, whether they move against the opposite leg) and what happens to the distance."
+      ],
+      "runners": [
+       {
+        "key": "e323_ctl_q2_k20",
+        "file": "runs/nov_e323_ctl_q2_k20.bin.gz",
+        "label": "No change, run 2 (control)",
+        "short": "No change",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 2 at 20,000 iterations, practised 20,000 more iterations with nothing changed, in the same pieces as the runner beside it."
+       },
+       {
+        "key": "e323_c3_q2_k20",
+        "file": "runs/nov_e323_c3_q2_k20.bin.gz",
+        "label": "Arm outputs re-started, charge on command size 5 %, 20,000 iterations, run 2",
+        "short": "Re-start + charge, 20,000",
+        "color": "#be185d",
+        "about": "From the body-Q runner of run 2 at 20,000 iterations: the 44 arm-muscle outputs of the network were set back to small random values, and a charge on the size of all muscle commands (5 % of the speed reward) was added; 20,000 iterations after the re-start."
+       },
+       {
+        "key": "e323_c3_q2",
+        "file": "runs/nov_e323_c3_q2.bin.gz",
+        "label": "The same after 5,000 iterations, run 2",
+        "short": "Re-start + charge, 5,000",
+        "color": "#b45309",
+        "about": "The same setting as the runner beside it, recorded 5,000 iterations after the re-start."
+       },
+       {
+        "key": "e323_c1_q2",
+        "file": "runs/nov_e323_c1_q2.bin.gz",
+        "label": "Arm outputs re-started only, 5,000 iterations, run 2",
+        "short": "Re-start only",
+        "color": "#0f766e",
+        "about": "From the body-Q runner of run 2 at 20,000 iterations: only the 44 arm-muscle outputs were re-started; no charge; 5,000 iterations."
+       }
+      ]
+     },
+     {
+      "key": "charge1",
+      "label": "Charge and effort variants, run 1",
+      "ref": "bodyQ_run1_plus5000",
+      "desc": [
+       "Milder variants of the same idea on run 1 of body Q, each practised 5,000 iterations with its setting, beside the control with nothing changed."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1_plus5000",
+        "file": "runs/nov_bodyQ_run1_plus5000.bin.gz",
+        "label": "No change (control)",
+        "short": "No change",
+        "color": "#5b6b7c",
+        "about": "Control: 5,000 more iterations with nothing changed."
+       },
+       {
+        "key": "e323_c2p2_q1",
+        "file": "runs/nov_e323_c2p2_q1.bin.gz",
+        "label": "Charge on command size, 2 %",
+        "short": "Charge 2 %",
+        "color": "#0f766e",
+        "about": "A charge on the size of all muscle commands at 2 % of the speed reward; no re-start."
+       },
+       {
+        "key": "e323_c2p5_q1",
+        "file": "runs/nov_e323_c2p5_q1.bin.gz",
+        "label": "Charge on command size, 5 %",
+        "short": "Charge 5 %",
+        "color": "#b45309",
+        "about": "The same charge at 5 % of the speed reward; no re-start."
+       },
+       {
+        "key": "e323_c6_q1",
+        "file": "runs/nov_e323_c6_q1.bin.gz",
+        "label": "Re-start + charge 1 %",
+        "short": "Re-start + 1 %",
+        "color": "#7c3aed",
+        "about": "Arm outputs re-started, then a charge on command size at 1 % of the speed reward."
+       },
+       {
+        "key": "e323_c7_q1",
+        "file": "runs/nov_e323_c7_q1.bin.gz",
+        "label": "Re-start + charge 2 %",
+        "short": "Re-start + 2 %",
+        "color": "#be185d",
+        "about": "Arm outputs re-started, then a charge on command size at 2 % of the speed reward."
+       },
+       {
+        "key": "e323_c4_q1",
+        "file": "runs/nov_e323_c4_q1.bin.gz",
+        "label": "Re-start + effort cost 5 %",
+        "short": "Re-start + effort",
+        "color": "#4d7c0f",
+        "about": "Arm outputs re-started, then a cost on squared muscle activation at 5 % of the speed reward."
+       }
+      ]
+     },
+     {
+      "key": "charge2",
+      "label": "Charge and effort variants, run 2",
+      "ref": "bodyQ_run2_plus5000",
+      "desc": [
+       "The repeats of these variants on run 2 of body Q (5,000 iterations each), beside the control with nothing changed."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run2_plus5000",
+        "file": "runs/nov_bodyQ_run2_plus5000.bin.gz",
+        "label": "No change (control)",
+        "short": "No change",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 2 at 20,000 iterations, 5,000 more iterations with nothing changed."
+       },
+       {
+        "key": "e323_c6_q2",
+        "file": "runs/nov_e323_c6_q2.bin.gz",
+        "label": "Re-start + charge 1 %",
+        "short": "Re-start + 1 %",
+        "color": "#7c3aed",
+        "about": "Arm outputs re-started, then a charge on command size at 1 % of the speed reward."
+       },
+       {
+        "key": "e323_c7_q2",
+        "file": "runs/nov_e323_c7_q2.bin.gz",
+        "label": "Re-start + charge 2 %",
+        "short": "Re-start + 2 %",
+        "color": "#be185d",
+        "about": "Arm outputs re-started, then a charge on command size at 2 % of the speed reward."
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Other tests on body Q",
+    "items": [
+     {
+      "key": "rf",
+      "label": "Rectus femoris at normal strength",
+      "gap": false,
+      "desc": [
+       "Body Q made the rectus femoris 60 % stronger together with the other hip flexors. Here it is back at normal strength: two runs practised 20,000 iterations from the same starting sprinter, beside body Q's own runs 1 and 2, and two short runs of 5,000 iterations from those runners.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1",
+        "file": "runs/nov_bodyQ_run1.bin.gz",
+        "label": "Body Q, run 1",
+        "short": "Q run 1",
+        "color": "#1a4f8a",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "e323_bodyq2_s1_k20",
+        "file": "runs/nov_e323_bodyq2_s1_k20.bin.gz",
+        "label": "Rectus femoris normal, run 1",
+        "short": "RF normal 1",
+        "color": "#0f766e",
+        "about": "Body Q with the rectus femoris back at normal strength (the other hip flexors stay 60 % stronger). Run 1: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "bodyQ_run2",
+        "file": "runs/nov_bodyQ_run2.bin.gz",
+        "label": "Body Q, run 2",
+        "short": "Q run 2",
+        "color": "#6f9bd1",
+        "about": "Calf muscles at 75 %, the Achilles tendon half as stiff, the toe motor switched off, hip flexors 60 % stronger. Run 2: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "e323_bodyq2_s2_k20",
+        "file": "runs/nov_e323_bodyq2_s2_k20.bin.gz",
+        "label": "Rectus femoris normal, run 2",
+        "short": "RF normal 2",
+        "color": "#4fb3a9",
+        "about": "Body Q with the rectus femoris back at normal strength (the other hip flexors stay 60 % stronger). Run 2: 20,000 iterations of practice on this body, in four pieces of 5,000, from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "e323_rf_q1",
+        "file": "runs/nov_e323_rf_q1.bin.gz",
+        "label": "Rectus femoris normal, 5,000 iterations from run 1",
+        "short": "RF short 1",
+        "color": "#b45309",
+        "about": "Body Q with the rectus femoris back at normal strength (the other hip flexors stay 60 % stronger). 5,000 iterations from the body-Q runner of run 1 at 20,000 iterations."
+       },
+       {
+        "key": "e323_rf_q2",
+        "file": "runs/nov_e323_rf_q2.bin.gz",
+        "label": "Rectus femoris normal, 5,000 iterations from run 2",
+        "short": "RF short 2",
+        "color": "#e09a55",
+        "about": "Body Q with the rectus femoris back at normal strength (the other hip flexors stay 60 % stronger). 5,000 iterations from the body-Q runner of run 2 at 20,000 iterations."
+       }
+      ]
+     },
+     {
+      "key": "effort",
+      "label": "Added cost on muscle effort",
+      "ref": "bodyQ_run1_plus5000",
+      "desc": [
+       "A cost that real runners also pay, added to the reward at three sizes and practised 5,000 iterations: squared muscle activation and squared arm-motor effort.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1_plus5000",
+        "file": "runs/nov_bodyQ_run1_plus5000.bin.gz",
+        "label": "No added cost (control)",
+        "short": "No cost",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 1 at 20,000 iterations, 5,000 more iterations with nothing changed."
+       },
+       {
+        "key": "e323_effort2_q1",
+        "file": "runs/nov_e323_effort2_q1.bin.gz",
+        "label": "Effort cost at 2 % of the speed reward",
+        "short": "Effort 2 %",
+        "color": "#0f766e",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on muscle effort, sized at 2 % of the speed reward."
+       },
+       {
+        "key": "e323_effort5_q1",
+        "file": "runs/nov_e323_effort5_q1.bin.gz",
+        "label": "Effort cost at 5 % of the speed reward",
+        "short": "Effort 5 %",
+        "color": "#b45309",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on muscle effort, sized at 5 % of the speed reward."
+       },
+       {
+        "key": "e323_effort10_q1",
+        "file": "runs/nov_e323_effort10_q1.bin.gz",
+        "label": "Effort cost at 10 % of the speed reward",
+        "short": "Effort 10 %",
+        "color": "#be185d",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on muscle effort, sized at 10 % of the speed reward."
+       }
+      ]
+     },
+     {
+      "key": "impact",
+      "label": "Added cost on impact",
+      "ref": "bodyQ_run1_plus5000",
+      "desc": [
+       "A cost on ground force above a set level, added to the reward at three sizes and practised 5,000 iterations.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1_plus5000",
+        "file": "runs/nov_bodyQ_run1_plus5000.bin.gz",
+        "label": "No added cost (control)",
+        "short": "No cost",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 1 at 20,000 iterations, 5,000 more iterations with nothing changed."
+       },
+       {
+        "key": "e323_impact2_q1",
+        "file": "runs/nov_e323_impact2_q1.bin.gz",
+        "label": "Impact cost at 2 % of the speed reward",
+        "short": "Impact 2 %",
+        "color": "#0f766e",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on ground force above a set level, sized at 2 % of the speed reward."
+       },
+       {
+        "key": "e323_impact5_q1",
+        "file": "runs/nov_e323_impact5_q1.bin.gz",
+        "label": "Impact cost at 5 % of the speed reward",
+        "short": "Impact 5 %",
+        "color": "#b45309",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on ground force above a set level, sized at 5 % of the speed reward."
+       },
+       {
+        "key": "e323_impact10_q1",
+        "file": "runs/nov_e323_impact10_q1.bin.gz",
+        "label": "Impact cost at 10 % of the speed reward",
+        "short": "Impact 10 %",
+        "color": "#be185d",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on ground force above a set level, sized at 10 % of the speed reward."
+       },
+       {
+        "key": "e323_impact5_q2",
+        "file": "runs/nov_e323_impact5_q2.bin.gz",
+        "label": "Impact cost at 5 %, repeat on run 2",
+        "short": "Impact 5 %, run 2",
+        "color": "#7c3aed",
+        "about": "The 5 % impact cost repeated from the body-Q runner of run 2 (5,000 iterations)."
+       }
+      ]
+     },
+     {
+      "key": "even",
+      "label": "Added cost on left-right unevenness",
+      "ref": "bodyQ_run1_plus5000",
+      "desc": [
+       "A cost on the difference between left and right steps, added to the reward at three sizes and practised 5,000 iterations.",
+       "What to look at: the recovering leg (how far the knee folds as the foot comes forward), the arms, and whether left and right steps are alike. The Close view (key 2) with a speed of 0.1× shows one runner's stride; In place and Overlaid compare postures."
+      ],
+      "runners": [
+       {
+        "key": "bodyQ_run1_plus5000",
+        "file": "runs/nov_bodyQ_run1_plus5000.bin.gz",
+        "label": "No added cost (control)",
+        "short": "No cost",
+        "color": "#5b6b7c",
+        "about": "Control: from the body-Q runner of run 1 at 20,000 iterations, 5,000 more iterations with nothing changed."
+       },
+       {
+        "key": "e323_even2_q1",
+        "file": "runs/nov_e323_even2_q1.bin.gz",
+        "label": "Evenness cost at 2 % of the speed reward",
+        "short": "Evenness 2 %",
+        "color": "#0f766e",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on the difference between left and right steps, sized at 2 % of the speed reward."
+       },
+       {
+        "key": "e323_even5_q1",
+        "file": "runs/nov_e323_even5_q1.bin.gz",
+        "label": "Evenness cost at 5 % of the speed reward",
+        "short": "Evenness 5 %",
+        "color": "#b45309",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on the difference between left and right steps, sized at 5 % of the speed reward."
+       },
+       {
+        "key": "e323_even10_q1",
+        "file": "runs/nov_e323_even10_q1.bin.gz",
+        "label": "Evenness cost at 10 % of the speed reward",
+        "short": "Evenness 10 %",
+        "color": "#be185d",
+        "about": "From the body-Q runner of run 1 at 20,000 iterations: 5,000 iterations with an added cost on the difference between left and right steps, sized at 10 % of the speed reward."
+       },
+       {
+        "key": "e323_even2_q2",
+        "file": "runs/nov_e323_even2_q2.bin.gz",
+        "label": "Evenness cost at 2 %, repeat on run 2",
+        "short": "Evenness 2 %, run 2",
+        "color": "#7c3aed",
+        "about": "The 2 % evenness cost repeated from the body-Q runner of run 2 (5,000 iterations)."
+       }
+      ]
+     },
+     {
+      "key": "grip",
+      "label": "More grip under the foot (unchanged body)",
+      "gap": false,
+      "desc": [
+       "One simulator setting on the unchanged body: the sliding friction of the foot's contact spheres raised from 0.3 to 0.95, practised 5,000 iterations, beside the unchanged runner."
+      ],
+      "runners": [
+       {
+        "key": "unchanged_twin_s1",
+        "file": "runs/nov_unchanged_twin_s1.bin.gz",
+        "label": "The unchanged runner",
+        "short": "Unchanged",
+        "color": "#5b6b7c",
+        "about": "The simulator's own sprinter body, nothing changed. 5,000 iterations of practice from the trained sprinter that every runner of this tab starts from."
+       },
+       {
+        "key": "grip_alone",
+        "file": "runs/nov_grip_alone.bin.gz",
+        "label": "More grip under the foot",
+        "short": "More grip",
+        "color": "#0f766e",
+        "about": "The unchanged body with sliding friction 0.95 instead of 0.3 on the foot spheres; 5,000 iterations."
        }
       ]
      }
