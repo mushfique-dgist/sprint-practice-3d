@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261121210635';
-import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261121210635';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261122042038';
+import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261122042038';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -524,8 +524,8 @@ function gapAt(r, ref, time) {
 }
 
 let lastBoard = 0, boardRows = [];
-function updateBoard(now) {
-  if (now - lastBoard < 90) return;
+function updateBoard(now, exact) {
+  if (!exact && now - lastBoard < 90) return;
   lastBoard = now;
   const ref = runners[refIndex()];
   let lead = -1, best = -Infinity;
@@ -672,8 +672,8 @@ function drawChart() {
 
 // ---------------------------------------------------------------------------------------------------------------
 let groupIdx = null, lastGroups = 0;
-function updateMuscles(now) {
-  if (now - lastGroups < 90) return;
+function updateMuscles(now, exact) {
+  if (!exact && now - lastGroups < 90) return;
   lastGroups = now;
   const r = runners[state.sel];
   const el = $('#groups');
@@ -966,14 +966,17 @@ function loop(now) {
     stage.update(state.time);
     stage.render(dt);
     stage.updateLabels(labelTexts());
-    if (now - lastSlow > 33) {   // readouts and chart at about 30 a second
+    // paused, or just ended: the readouts show this exact moment (while playing they are refreshed 11 to 30 times a
+    // second, and the last refresh before the end of a run used to stay on screen: up to 0.09 s, about 1 m, early)
+    const exact = !state.playing;
+    if (exact || now - lastSlow > 33) {   // readouts and chart at about 30 a second
       lastSlow = now;
       $('#time').value = state.time.toFixed(3);
       $('#clock').textContent = `${state.time.toFixed(2)} s`;
       drawChart();
     }
-    updateBoard(now);
-    updateMuscles(now);
+    updateBoard(now, exact);
+    updateMuscles(now, exact);
     quality(now);
   }
 }
