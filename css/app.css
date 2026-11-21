@@ -168,6 +168,8 @@ main { height: calc(100% - var(--head-h) - var(--foot-h)); }
 .board .neg { color: #b42318; }
 .board .pos { color: var(--good); }
 .board .fell { color: #b42318; font-size: 11px; }
+.board.nogap th:nth-child(4), .board.nogap td.gap { display: none; }
+#muscleCard.none { display: none; }   /* a recording without muscles */
 #chart { width: 100%; height: 170px; display: block; cursor: crosshair; }
 
 /* muscle groups */

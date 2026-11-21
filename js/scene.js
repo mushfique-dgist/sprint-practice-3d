@@ -4,11 +4,12 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { frameAt } from './data.js?v=202611011827';
+import { frameAt } from './data.js?v=20261121204910';
 
 export const LANE_W = 1.22;
 export const laneZ = (lane) => (lane - 4.5) * LANE_W;
-const MAX_RUNNERS = 6;
+export const MAX_RUNNERS = 6;
+const MAX_PRINTS = 600;
 const TRACK_W = 8 * LANE_W;
 const X_TREADMILL = 50;
 const BONE = new THREE.Color().setRGB(0.93, 0.9, 0.83, THREE.SRGBColorSpace);
@@ -48,6 +49,22 @@ function textPlane(text, height, { color = '#ffffff', stroke = 'rgba(20,30,20,0.
   return m;
 }
 
+// scratch objects of update(): allocated once, so drawing a frame creates no garbage
+const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q1 = new THREE.Quaternion();
+const _pos = new THREE.Vector3(), _sc = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
+const _col = new THREE.Color(), _grey = new THREE.Color().setRGB(0.78, 0.78, 0.8, THREE.SRGBColorSpace);
+const _vA = new THREE.Vector3(), _vB = new THREE.Vector3();
+
+// Marks the first n instances of an instanced attribute for upload. Without a range three.js sends the whole
+// buffer (every instance the mesh has room for) on every frame, also when few or none are drawn.
+function upload(attr, n) {
+  if (!attr) return;
+  attr.clearUpdateRanges();
+  if (n <= 0) return;
+  attr.addUpdateRange(0, n * attr.itemSize);
+  attr.needsUpdate = true;
+}
+
 export class Stage {
   constructor(container, bones) {
     this.container = container;
@@ -56,8 +73,8 @@ export class Stage {
     container.prepend(canvas);
     const r = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     // at most 1.5 device pixels per CSS pixel; lowered further (to 1) by lowerQuality() when frames are slow
-    this.maxDpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    r.setPixelRatio(this.maxDpr);
+    this.lowered = 0;
+    r.setPixelRatio(this.pixelRatio());
     r.shadowMap.enabled = true;
     r.shadowMap.type = THREE.PCFShadowMap;
     // Refreshed on every drawn frame. Refreshing every other frame made the bones lag one frame behind the muscles in
@@ -87,6 +104,9 @@ export class Stage {
     this.controls.minDistance = 1.2;
     this.controls.maxDistance = 120;
     this.controls.addEventListener('change', () => this.onWake && this.onWake(800));
+    // OrbitControls switches touch scrolling off on the canvas for good; a phone must be able to scroll the page by
+    // swiping over the stage unless the Free view is on (setView)
+    canvas.style.touchAction = 'pan-y';
 
     s.add(new THREE.HemisphereLight(new THREE.Color('#eef5ff'), new THREE.Color('#7d8f5c'), 1.5));
     const sun = this.sun = new THREE.DirectionalLight(new THREE.Color('#fff4e2'), 2.6);
@@ -114,13 +134,23 @@ export class Stage {
     this.lastFocusX = null;
     this.labels = container.querySelector('.labels');
     new ResizeObserver(() => this.resize()).observe(container);
+    // a window moved to a monitor with another pixel ratio keeps its size, so the observer above does not fire
+    const watchRatio = () => matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`)
+      .addEventListener('change', () => { this.resize(); watchRatio(); }, { once: true });
+    watchRatio();
     this.resize();
   }
+
+  // device pixels per CSS pixel to draw at: the screen's own, at most 1.5, less the steps taken by lowerQuality()
+  pixelRatio() { return Math.max(1, Math.min(window.devicePixelRatio || 1, 1.5) - this.lowered); }
 
   resize() {
     const w = this.container.clientWidth, h = this.container.clientHeight;
     if (!w || !h) return;
     this.W = w; this.H = h;   // cached so that per-frame code never reads layout
+    // the screen's pixel ratio changes with browser zoom and when the window moves to another monitor
+    const pr = this.pixelRatio();
+    if (Math.abs(pr - this.renderer.getPixelRatio()) > 1e-3) this.renderer.setPixelRatio(pr);
     this.renderer.setSize(w, h, false);
     if (this.onWake) this.onWake();
     this.camera.aspect = w / h;
@@ -229,12 +259,18 @@ export class Stage {
       this.scene.add(im);
       this.boneIM[name] = im;
     }
+    this.boneList = Object.values(this.boneIM);
   }
 
-  buildMuscles() {
-    this.muscleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.42, metalness: 0 });
-    this.segIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 10, 1, true), this.muscleMat, 2600);
-    this.ptIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 5), this.muscleMat, 3400);
+  // room for `segs` muscle segments and `pts` path points (a cylinder and a sphere each); called again by setRunners
+  // when the recordings on stage need more than there is
+  buildMuscles(segs = 2600, pts = 3400) {
+    if (this.segIM) {
+      for (const im of [this.segIM, this.ptIM]) { this.scene.remove(im); im.geometry.dispose(); im.dispose(); }
+    }
+    this.muscleMat = this.muscleMat || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.42, metalness: 0 });
+    this.segIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 10, 1, true), this.muscleMat, segs);
+    this.ptIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 5), this.muscleMat, pts);
     for (const im of [this.segIM, this.ptIM]) {
       im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       im.frustumCulled = false;
@@ -247,7 +283,7 @@ export class Stage {
 
   buildMarkers() {
     this.prints = new THREE.InstancedMesh(new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false }), 600);
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false }), MAX_PRINTS);
     this.prints.frustumCulled = false;
     this.prints.setColorAt(0, BONE);
     this.prints.count = 0;
@@ -278,16 +314,20 @@ export class Stage {
 
   // runners: [{run, lane, color, short, gear}]
   setRunners(runners) {
-    this.runners = runners.map((r, i) => {
+    // the stage has room for MAX_RUNNERS (bones, rings, arrows); more are not drawn
+    let segs = 0, pts = 0;
+    this.runners = runners.slice(0, MAX_RUNNERS).map((r, i) => {
       const run = r.run;
       // muscle layout: segment and point offsets for this recording
       const npts = run.head.muscles.npts, fmax = run.head.muscles.fmax;
       const start = []; let p = 0;
-      for (const n of npts) { start.push(p); p += n; }
-      return { ...r, i, color: new THREE.Color(r.color), start, npts, fmax,
-        iFootL: run.head.meshes.indexOf('l_foot'), iFootR: run.head.meshes.indexOf('foot'),
-        iTalusL: run.head.meshes.indexOf('talus_lv'), iTalusR: run.head.meshes.indexOf('talus_rv') };
+      for (const n of npts) { start.push(p); p += n; segs += Math.max(n - 1, 0); }
+      pts += p;
+      const mesh = (name) => run.head.meshes.indexOf(name);
+      return { ...r, i, color: new THREE.Color(r.color), gearColor: r.gear ? new THREE.Color(r.gear.color) : null, start, npts, fmax,
+        iHip: mesh('pelvis'), iTalusL: mesh('talus_lv'), iTalusR: mesh('talus_rv') };
     });
+    if (segs > this.segIM.instanceMatrix.count || pts > this.ptIM.instanceMatrix.count) this.buildMuscles(segs, pts);
     this.lastFocusX = null;
     this.labels.innerHTML = '';
     for (const r of this.runners) {
@@ -299,7 +339,7 @@ export class Stage {
       r.tag = el;
     }
     const n = this.runners.length;
-    for (const im of Object.values(this.boneIM)) {
+    for (const im of this.boneList) {
       im.count = n;
       for (let i = 0; i < n; i++) im.setColorAt(i, BONE);
       im.instanceColor.needsUpdate = true;
@@ -310,18 +350,15 @@ export class Stage {
   applyTint() {
     for (const r of this.runners) {
       const c = this.opts.mode === 'overlay' ? BONE.clone().lerp(r.color, 0.8) : this.opts.tint ? BONE.clone().lerp(r.color, 0.55) : BONE;
-      for (const im of Object.values(this.boneIM)) if (r.i < im.count) im.setColorAt(r.i, c);
+      for (const im of this.boneList) if (r.i < im.count) im.setColorAt(r.i, c);
     }
-    for (const im of Object.values(this.boneIM)) if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    for (const im of this.boneList) if (im.instanceColor) im.instanceColor.needsUpdate = true;
   }
 
-  // sideways and forward offsets of a runner for the current display mode
-  offsets(r, fi) {
-    const run = r.run;
-    let dx = 0, dz = laneZ(r.lane);
-    if (this.opts.mode !== 'race') dx = X_TREADMILL - interp(run.pelvis, 3, 0, fi);
-    if (this.opts.mode === 'overlay') dz = laneZ(this.centerLane());
-    return [dx, dz];
+  // show or hide one runner (by its place on stage)
+  setVisible(i, on) {
+    if (this.runners[i]) this.runners[i].visible = on;
+    this.lastFocusX = null;
   }
 
   centerLane() {
@@ -330,16 +367,16 @@ export class Stage {
   }
 
   update(time) {
-    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), q1 = new THREE.Quaternion();
-    const pos = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3();
-    const col = new THREE.Color(), grey = new THREE.Color().setRGB(0.78, 0.78, 0.8, THREE.SRGBColorSpace);
-    const vA = new THREE.Vector3(), vB = new THREE.Vector3();
+    const m4 = _m4, q = _q, q1 = _q1, pos = _pos, sc = _sc, up = _up, d = _d, col = _col, grey = _grey, vA = _vA, vB = _vB;
     let nSeg = 0, nPt = 0, nPrint = 0, nGear = 0;
     const thick = this.opts.thickness;
     const hl = this.opts.highlight;
     const showMus = this.opts.muscles, showBones = this.opts.bones;
-    for (const im of Object.values(this.boneIM)) im.visible = showBones;
+    for (const im of this.boneList) im.visible = showBones;
     const solo = this.view === 'gait' && this.opts.mode !== 'overlay';
+    const race = this.opts.mode === 'race';
+    const overlayZ = this.opts.mode === 'overlay' ? laneZ(this.centerLane()) : null;
+    const printsEach = Math.floor(MAX_PRINTS / Math.max(this.runners.length, 1));
     for (const r of this.runners) {
       const run = r.run, V = run.V;
       r.visible = r.visible !== false;
@@ -347,7 +384,9 @@ export class Stage {
       const fi = frameAt(run, time);
       const f0 = Math.floor(fi), f1 = Math.min(f0 + 1, run.F - 1), w = fi - f0;
       const px = interp(run.pelvis, 3, 0, fi), py = interp(run.pelvis, 3, 1, fi), pz = interp(run.pelvis, 3, 2, fi);
-      const [dx, dz] = this.offsets(r, fi);
+      // sideways and forward offsets for the display mode: lanes, or forward travel removed, or all in one lane
+      const dx = race ? 0 : X_TREADMILL - px;
+      const dz = overlayZ === null ? laneZ(r.lane) : overlayZ;
       r.x = px + dx; r.z = pz + dz; r.px = px;
       r.fi = fi;
       // bones
@@ -397,13 +436,14 @@ export class Stage {
           }
         }
       }
-      // footprints of the strikes so far, and a ring under the runner
-      if (this.opts.footprints && r.shown) {
-        for (const s of run.strikes) {
-          if (s.t - run.t[0] > time + 1e-6 || nPrint >= 600) break;
-          const fx = this.opts.mode === 'race' ? s.x + dx : null;
-          if (fx === null) continue;
-          m4.compose(pos.set(fx + 0.06, 0.011, s.z + dz), q.identity(), sc.set(0.14, 1, 0.055));
+      // footprints of the latest strikes (an equal share of the room for each runner, so that on a long recording
+      // the first lane does not use it all), and a ring under the runner
+      if (this.opts.footprints && r.shown && race) {
+        const S = run.strikes, tNow = time + run.t[0] + 1e-6;
+        let lo = 0, hi = S.length;                       // number of strikes up to now
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (S[mid].t <= tNow) lo = mid + 1; else hi = mid; }
+        for (let k = Math.max(0, lo - printsEach); k < lo; k++) {
+          m4.compose(pos.set(S[k].x + dx + 0.06, 0.011, S[k].z + dz), q.identity(), sc.set(0.14, 1, 0.055));
           this.prints.setMatrixAt(nPrint, m4); this.prints.setColorAt(nPrint, r.color); nPrint++;
         }
       }
@@ -411,15 +451,16 @@ export class Stage {
       this.rings.setMatrixAt(r.i, m4); this.rings.setColorAt(r.i, r.color);
       // worn devices
       if (r.gear && r.shown) {
-        const gc = new THREE.Color(r.gear.color);
-        if (r.gear.at === 'hip') {
-          const k0 = 3 * (f0 * V + 1), k1 = 3 * (f1 * V + 1);
+        const gc = r.gearColor;
+        if (r.gear.at === 'hip' && r.iHip >= 0) {
+          const k0 = 3 * (f0 * V + r.iHip), k1 = 3 * (f1 * V + r.iHip);
           pos.set(px + dx + lerp(run.bonePos[k0], run.bonePos[k1], w), py + lerp(run.bonePos[k0 + 1], run.bonePos[k1 + 1], w) - 0.04,
             pz + dz + lerp(run.bonePos[k0 + 2], run.bonePos[k1 + 2], w));
           m4.compose(pos, q.identity(), sc.set(0.19, 0.19, 0.19));
           this.gear.setMatrixAt(nGear, m4); this.gear.setColorAt(nGear, gc); nGear++;
         } else if (r.gear.at === 'ankle') {
           for (const b of [r.iTalusL, r.iTalusR]) {
+            if (b < 0) continue;
             const k0 = 3 * (f0 * V + b), k1 = 3 * (f1 * V + b);
             pos.set(px + dx + lerp(run.bonePos[k0], run.bonePos[k1], w), py + lerp(run.bonePos[k0 + 1], run.bonePos[k1 + 1], w),
               pz + dz + lerp(run.bonePos[k0 + 2], run.bonePos[k1 + 2], w));
@@ -448,24 +489,28 @@ export class Stage {
         }
       }
     }
-    for (const im of Object.values(this.boneIM)) { im.instanceMatrix.needsUpdate = true; }
+    const nRun = this.runners.length;
+    for (const im of this.boneList) upload(im.instanceMatrix, showBones ? nRun : 0);
     this.segIM.count = nSeg; this.ptIM.count = nPt;
-    for (const im of [this.segIM, this.ptIM]) { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; }
-    this.prints.count = nPrint; this.prints.instanceMatrix.needsUpdate = true;
-    if (this.prints.instanceColor) this.prints.instanceColor.needsUpdate = true;
-    this.rings.count = this.runners.length; this.rings.instanceMatrix.needsUpdate = true;
-    if (this.rings.instanceColor) this.rings.instanceColor.needsUpdate = true;
-    this.gear.count = nGear; this.gear.instanceMatrix.needsUpdate = true;
-    if (this.gear.instanceColor) this.gear.instanceColor.needsUpdate = true;
+    upload(this.segIM.instanceMatrix, nSeg); upload(this.segIM.instanceColor, nSeg);
+    upload(this.ptIM.instanceMatrix, nPt); upload(this.ptIM.instanceColor, nPt);
+    this.prints.count = nPrint;
+    upload(this.prints.instanceMatrix, nPrint); upload(this.prints.instanceColor, nPrint);
+    this.rings.count = nRun;
+    upload(this.rings.instanceMatrix, nRun); upload(this.rings.instanceColor, nRun);
+    this.gear.count = nGear;
+    upload(this.gear.instanceMatrix, nGear); upload(this.gear.instanceColor, nGear);
   }
 
   // camera: follows the group (or the selected runner); presets blend over about 0.7 s
   setView(v) {
     if (v === this.view) return;
     this.camFrom = { pos: this.camera.position.clone(), look: this.lookCur ? this.lookCur.clone() : this.focus.clone(), up: this.camera.up.clone() };
-    this.camBlend = 0;
+    // the Free view starts from where the camera is: nothing to blend, and busy() must not keep the page drawing
+    this.camBlend = v === 'free' ? 1 : 0;
     this.view = v;
     this.controls.enabled = v === 'free';
+    this.renderer.domElement.style.touchAction = v === 'free' ? 'none' : 'pan-y';
     if (v === 'free') {
       this.controls.target.copy(this.lookCur || this.focus);
     }
@@ -575,8 +620,14 @@ export class Stage {
       v.set(r.x, 2.0, r.z).project(this.camera);
       if (v.z > 1 || v.z < -1) { hide(); continue; }
       if (el.style.display === 'none') { el.style.display = ''; r.tagW = 0; }
+      // The distance digits have equal widths (tabular figures), so a tag's size changes only when its text gets
+      // longer or shorter: it is measured again only then, not at every change of a digit.
       const t = info && info[r.i];
-      if (t && t !== r.tagText) { r.tagText = t; el.querySelector('.d').textContent = t; r.tagW = 0; }
+      if (t && t !== r.tagText) {
+        r.tagText = t;
+        (r.tagD || (r.tagD = el.querySelector('.d'))).textContent = t;
+        if (t.length !== r.tagLen) { r.tagLen = t.length; r.tagW = 0; }
+      }
       if (!r.tagW) measure.push(r);
       placed.push({ r, el, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h });
     }
@@ -603,9 +654,8 @@ export class Stage {
 
   // slower frames: one step down in resolution (1.5 -> 1.25 -> 1 device pixels per CSS pixel); false when at the floor
   lowerQuality() {
-    const d = this.renderer.getPixelRatio();
-    if (d <= 1.0001) return false;
-    this.renderer.setPixelRatio(Math.max(1, d - 0.25));
+    if (this.renderer.getPixelRatio() <= 1.0001) return false;
+    this.lowered += 0.25;
     this.resize();
     return true;
   }

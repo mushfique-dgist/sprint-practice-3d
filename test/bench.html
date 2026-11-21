@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sprint Practice 3D: timing bench</title>
+  <style>
+    body { font: 14px/1.4 system-ui, sans-serif; margin: 16px; }
+    #stage { position: relative; width: 960px; height: 540px; background: #ccc; }
+    #stage canvas { width: 100%; height: 100%; display: block; }
+    .labels { position: absolute; inset: 0; pointer-events: none; }
+    .tag { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; }
+    pre { background: #f3f5f7; padding: 10px; white-space: pre-wrap; }
+  </style>
+  <script type="importmap">{ "imports": { "three": "../vendor/three/three.module.js", "three/addons/": "../vendor/three/addons/" } }</script>
+</head>
+<body>
+  <h1>Timing bench</h1>
+  <p>Times the stage's per-frame work on the five recordings of pair 1 (or <code>?files=a,b,c</code>, paths under <code>data/</code>).
+    Result as JSON below and in <code>window.benchResult</code>. Options: <code>?n=600</code> calls per test, <code>?reps=5</code> repeats (the median is reported).</p>
+  <div id="stage"><div class="labels"></div></div>
+  <pre id="out">running…</pre>
+  <script type="module">
+    // a fresh copy of the modules on every run (a cached copy would time an older version of the code)
+    const bust = `?t=${Date.now()}`;
+    const { loadBones, loadRun } = await import(`../js/data.js${bust}`);
+    const { Stage } = await import(`../js/scene.js${bust}`);
+
+    const q = new URLSearchParams(location.search);
+    const N = +(q.get('n') || 600), REPS = +(q.get('reps') || 5);
+    const median = (a) => a.slice().sort((x, y) => x - y)[a.length >> 1];
+    const out = document.querySelector('#out');
+    try {
+      const cat = await (await fetch('../data/catalog.json')).json();
+      const P = cat.main.pairs[0];
+      const files = q.get('files') ? q.get('files').split(',') : ['base', 'twin', 'mix', 'brake', 'dev'].map((a) => P.off[a]);
+      const t0 = performance.now();
+      const [bones, ...runs] = await Promise.all([loadBones('../data/bones.bin.gz'), ...files.map((f) => loadRun(`../data/${f}`))]);
+      const tLoad = performance.now() - t0;
+      const stage = new Stage(document.querySelector('#stage'), bones);
+      const colors = ['#94a0ad', '#0f766e', '#1a4f8a', '#b45309', '#5b6b7c', '#7c3aed'];
+      stage.setRunners(runs.map((run, i) => ({ run, lane: 2 + i, color: colors[i % 6], short: `R${i + 1}`, num: i + 1, key: `r${i}`, visible: true })));
+      const dur = Math.max(...runs.map((r) => r.duration));
+      const gl = stage.renderer.getContext();
+      const time = (fn) => {
+        const res = [];
+        for (let r = 0; r < REPS; r++) {
+          const a = performance.now();
+          for (let i = 0; i < N; i++) fn((i / N) * dur);
+          res.push((performance.now() - a) / N);
+        }
+        return +median(res).toFixed(4);
+      };
+      const result = { files: files.length, frames: runs.map((r) => r.F), calls: N, reps: REPS, load_ms: +tLoad.toFixed(0) };
+      stage.update(0); stage.render(0.016); gl.finish();
+      result.update_ms = time((t) => stage.update(t));
+      result.labels_ms = time((t) => stage.updateLabels(runs.map(() => `${t.toFixed(1)} m`)));
+      result.frame_ms = time((t) => { stage.update(t); stage.render(0.016); stage.updateLabels(runs.map(() => `${t.toFixed(1)} m`)); gl.finish(); });
+      stage.opts.muscles = false;
+      result.update_no_muscles_ms = time((t) => stage.update(t));
+      stage.opts.muscles = true;
+      // garbage: objects the per-frame code allocates, from the heap growth over many calls (needs a Chromium browser)
+      if (performance.memory) {
+        const h0 = performance.memory.usedJSHeapSize;
+        for (let i = 0; i < 2000; i++) stage.update((i / 2000) * dur);
+        result.heap_growth_kb_per_update = +((performance.memory.usedJSHeapSize - h0) / 2000 / 1024).toFixed(2);
+      }
+      // memory a recording keeps: every distinct buffer behind its typed arrays (a view keeps its whole buffer alive)
+      const kept = (r) => { const seen = new Set(); let n = 0; for (const v of Object.values(r)) { if (ArrayBuffer.isView(v) && !seen.has(v.buffer)) { seen.add(v.buffer); n += v.buffer.byteLength; } } return n; };
+      result.kept_mb_per_run = +(runs.reduce((s, r) => s + kept(r), 0) / runs.length / 1e6).toFixed(2);
+      // bytes sent to the GPU per frame for instance data
+      let sent = 0;
+      const sub = gl.bufferSubData.bind(gl);
+      gl.bufferSubData = (...a) => { sent += a[4] !== undefined ? a[4] * a[2].BYTES_PER_ELEMENT : a[2].byteLength; return sub(...a); };
+      for (let i = 0; i < 100; i++) { stage.update((i / 100) * dur); stage.render(0.016); }
+      result.gpu_upload_kb_per_frame = +(sent / 100 / 1024).toFixed(1);
+      sent = 0; stage.opts.muscles = false;
+      for (let i = 0; i < 100; i++) { stage.update((i / 100) * dur); stage.render(0.016); }
+      result.gpu_upload_kb_per_frame_muscles_off = +(sent / 100 / 1024).toFixed(1);
+      stage.opts.muscles = true; gl.bufferSubData = sub;
+      window.benchResult = result;
+      out.textContent = JSON.stringify(result, null, 1);
+    } catch (e) {
+      window.benchResult = { error: String(e && e.stack || e) };
+      out.textContent = window.benchResult.error;
+    }
+  </script>
+</body>
+</html>

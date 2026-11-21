@@ -10,15 +10,23 @@ async function fetchBytes(url) {
   const b = new Uint8Array(buf, 0, 2);
   if (b[0] !== 0x1f || b[1] !== 0x8b) return buf; // already decompressed by the server
   const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
-  return await new Response(stream).arrayBuffer();
+  try { return await new Response(stream).arrayBuffer(); }
+  catch (e) { throw new Error(`${url}: the file is cut short or damaged`); }
 }
 
 function header(buf, magic) {
+  if (buf.byteLength < 8) throw new Error(`not a ${magic} file (${buf.byteLength} bytes)`);
   const tag = String.fromCharCode(...new Uint8Array(buf, 0, 4));
   if (tag !== magic) throw new Error(`not a ${magic} file`);
   const n = new DataView(buf).getUint32(4, true);
-  return { head: JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n))), base: 8 + n };
+  if (8 + n > buf.byteLength) throw new Error(`${magic} file is cut short (header)`);
+  let head;
+  try { head = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n))); }
+  catch (e) { throw new Error(`${magic} file has an unreadable header`); }
+  return { head, base: 8 + n };
 }
+
+const REQUIRED = ['time', 'pelvis', 'com', 'bone_pos', 'bone_rot', 'muscle_pts', 'activation', 'foot_force'];
 
 // int16 channel-major frame differences -> (frames x channels) float32, times unit
 function undelta(src, frames, channels, unit) {
@@ -49,24 +57,42 @@ export async function loadBones(url) {
 export async function loadRun(url) {
   const buf = await fetchBytes(url);
   const { head, base } = header(buf, 'SPR1');
+  // A file that is cut short, empty or incomplete is refused here with a plain message, so that the page can say
+  // which recording is unusable instead of failing later with numbers that are not numbers.
   const A = {};
-  for (const a of head.arrays) {
+  for (const a of head.arrays || []) {
     const count = a.shape.reduce((p, q) => p * q, 1);
-    A[a.name] = { v: new TYPES[a.dtype](buf, base + a.offset, count), shape: a.shape, delta: a.delta };
+    const T = TYPES[a.dtype];
+    if (!T || base + a.offset + count * T.BYTES_PER_ELEMENT > buf.byteLength) throw new Error(`recording is cut short (${a.name})`);
+    A[a.name] = { v: new T(buf, base + a.offset, count), shape: a.shape, delta: a.delta };
   }
+  const missing = REQUIRED.filter((k) => !A[k]);
+  if (missing.length) throw new Error(`recording lacks ${missing.join(', ')}`);
   const F = head.frames;
+  if (!(F >= 1)) throw new Error('recording has no frames');
   const V = head.meshes.length;
   const P = A.muscle_pts.shape[1];
   const M = head.muscles.names.length;
+  for (const [k, n] of [['time', F], ['pelvis', 3 * F], ['bone_pos', 3 * F * V], ['bone_rot', 4 * F * V], ['muscle_pts', 3 * F * P], ['activation', F * M], ['foot_force', 2 * F]]) {
+    if (A[k].v.length !== n) throw new Error(`recording's ${k} does not fit its ${F} frames`);
+  }
+  for (let f = 0; f < F; f++) {
+    if (!Number.isFinite(A.time.v[f]) || !Number.isFinite(A.pelvis.v[3 * f]) || !Number.isFinite(A.pelvis.v[3 * f + 1]) || !Number.isFinite(A.pelvis.v[3 * f + 2])) {
+      throw new Error(`recording has a value that is not a number (frame ${f})`);
+    }
+  }
+  // The small arrays are copied out of the file's buffer (slice), so the buffer, half of it frame differences that
+  // are decoded just below, can be freed: about a third less memory held per recording.
   const run = {
     url, head, F, V, P, M, fps: head.fps,
-    t: A.time.v, pelvis: A.pelvis.v, com: A.com.v,
+    t: A.time.v.slice(), pelvis: A.pelvis.v.slice(), com: A.com.v.slice(),
     bonePos: undelta(A.bone_pos.v, F, V * 3, head.pos_unit),
     boneRot: undelta(A.bone_rot.v, F, V * 4, 1 / 32767),
     musclePts: undelta(A.muscle_pts.v, F, P * 3, head.pos_unit),
-    act: A.activation.v, foot: A.foot_force.v,
+    act: A.activation.v.slice(), foot: A.foot_force.v.slice(),
     force: null,
   };
+  run.bytes = ['t', 'pelvis', 'com', 'bonePos', 'boneRot', 'musclePts', 'act', 'foot'].reduce((n, k) => n + run[k].byteLength, 0);
   if (A.force_dir) {
     const n = head.force_arrows.length;
     run.force = { n, start: undelta(A.force_start.v, F, n * 3, head.pos_unit), dir: undelta(A.force_dir.v, F, n * 3, head.force_unit) };
@@ -91,6 +117,7 @@ function derive(run) {
   }
   run.speed[0] = 0;
   // foot strikes: contact force rising through 100 N, at least 0.15 s after that foot's last strike
+  // a recording without a foot bone marks its strikes under the pelvis
   const iFoot = { l: run.head.meshes.indexOf('l_foot'), r: run.head.meshes.indexOf('foot') };
   const strikes = [];
   for (const [s, col] of [['l', 0], ['r', 1]]) {
@@ -98,8 +125,8 @@ function derive(run) {
     for (let f = 1; f < F; f++) {
       const a = run.foot[2 * (f - 1) + col], b = run.foot[2 * f + col];
       if (a < 100 && b >= 100 && t[f] - last > 0.15) {
-        const k = 3 * (f * run.V + iFoot[s]);
-        strikes.push({ f, t: t[f], side: s, x: pelvis[3 * f] + run.bonePos[k], z: pelvis[3 * f + 2] + run.bonePos[k + 2] });
+        const k = 3 * (f * run.V + iFoot[s]), has = iFoot[s] >= 0;
+        strikes.push({ f, t: t[f], side: s, x: pelvis[3 * f] + (has ? run.bonePos[k] : 0), z: pelvis[3 * f + 2] + (has ? run.bonePos[k + 2] : 0) });
         last = t[f];
       }
     }

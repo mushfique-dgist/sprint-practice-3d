@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sprint Practice 3D: the real page on test data</title>
+  <base href="../">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }</script>
+</head>
+<body>
+  <!--
+    Runs the real page (the body of index.html and js/app.js, unchanged) with two optional substitutions:
+      ?case=<name>   the catalogue gets one extra scene made of synthetic recordings (see CASES below); open it with
+                     #nov/<name> (the page opens there by itself)
+      ?raf=timer     frames are driven by a 16 ms timer instead of requestAnimationFrame, so the page also draws in a
+                     background tab or a hidden pane (browsers stop requestAnimationFrame there)
+      ?fail=<text>   every download whose address contains <text> answers "not found" (for example ?fail=bones.bin)
+      ?debug         the page puts its inner state in window.sp3d (see the end of js/app.js)
+    Nothing here is loaded by the public page.
+  -->
+  <script type="module">
+    import { makeRun, tileRun } from './test/synth.js';
+
+    const q = new URLSearchParams(location.search);
+    const name = q.get('case');
+    if (q.get('raf') === 'timer') window.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+    const realFetch = window.fetch.bind(window);
+    const REAL = ['runs/base1_off.bin.gz', 'runs/deck_twin_s1_off.bin.gz', 'runs/deck_mix_s1_off.bin.gz'];
+    const COL = ['#1a4f8a', '#b45309', '#0f766e', '#7c3aed', '#be185d', '#4d7c0f', '#5b6b7c', '#111827'];
+    // each case: a list of runners; `make` returns the file's bytes, null for "file not found", or a path of a real file
+    const CASES = {
+      mixedfps: [['30 a second, 9.0 m/s', () => makeRun({ fps: 30, speed: 9 })], ['60 a second, 9.5 m/s', () => makeRun({ fps: 60, speed: 9.5, seconds: 10 })]],
+      early: [['Full 10 s', () => makeRun({ speed: 9 })], ['Ends at 3 s', () => makeRun({ speed: 9.5, seconds: 3 })]],
+      refearly: [['Reference ends at 3 s', () => makeRun({ speed: 9, seconds: 3 })], ['Full 10 s', () => makeRun({ speed: 9.5 })]],
+      long: [['Real run, 12 times over (2 min)', () => tileRun(`data/${REAL[1]}`, 12)], ['Real run, 10 s', () => REAL[2]]],
+      missing: [['Real run', () => REAL[1]], ['File not found', () => null], ['Real run', () => REAL[2]]],
+      allmissing: [['File not found', () => null], ['File not found', () => null]],
+      nomuscle: [['No muscles in the file', () => makeRun({ muscles: false })], ['Real run', () => REAL[1]]],
+      nofeet: [['No foot bones in the file', () => makeRun({ bones: ['sacrum', 'pelvis', 'torso'] })], ['Real run', () => REAL[1]]],
+      oneframe: [['Real run', () => REAL[1]], ['One frame', () => makeRun({ frames: 1 })]],
+      zero: [['Real run', () => REAL[1]], ['Zero frames', () => makeRun({ frames: 0 })]],
+      nan: [['Real run', () => REAL[1]], ['Not-a-number at frame 100', () => makeRun({ nanAt: 100 })]],
+      truncated: [['Real run', () => REAL[1]], ['File cut in half', async () => { const b = await makeRun({}); return b.slice(0, b.length >> 1); }]],
+      noarray: [['Real run', () => REAL[1]], ['No foot force in the file', () => makeRun({ drop: 'foot_force' })]],
+      seven: Array.from({ length: 7 }, (_, i) => [`Runner ${i + 1}`, () => makeRun({ speed: 8 + 0.3 * i })]),
+    };
+
+    const html = await (await realFetch('index.html')).text();
+    document.body.insertAdjacentHTML('beforeend', new DOMParser().parseFromString(html, 'text/html').body.innerHTML);
+    const synth = new Map();
+    let scene = null;
+    if (name && CASES[name]) {
+      const runners = [];
+      for (const [i, [label, make]] of CASES[name].entries()) {
+        const made = await make();
+        const file = typeof made === 'string' ? made : `runs/synth_${name}_${i}.bin.gz`;
+        if (typeof made !== 'string') synth.set(`data/${file}`, made);
+        runners.push({ key: `t${i}`, file, label, short: label, color: COL[i % COL.length], about: 'test recording' });
+      }
+      scene = { key: name, label: `Test: ${name}`, ref: 't0', desc: ['Synthetic test scene.'], runners };
+    }
+    window.fetch = async (url, opts) => {
+      const u = String(url instanceof Request ? url.url : url);
+      if (q.get('fail') && u.includes(q.get('fail'))) return new Response('not found', { status: 404 });   // ?fail=bones.bin
+      for (const [path, bytes] of synth) {
+        if (u.endsWith(path)) return bytes ? new Response(bytes) : new Response('not found', { status: 404 });
+      }
+      if (scene && u.includes('data/catalog.json')) {
+        const cat = await (await realFetch(url, opts)).json();
+        const nov = cat.nov || { title: 'Test', pick: '', hud: 'test', state: 'test', board: 'test', fine: '', groups: [] };
+        cat.nov = { ...nov, groups: [{ title: 'Adversarial tests', items: [scene] }, ...nov.groups] };
+        // the same scene as a "23 Oct race", for versions of the page without the November tab
+        cat.oct23.push({ key: scene.key, title: scene.label, sub: 'test', desc: 'Synthetic test scene.', clip: false,
+          runners: scene.runners.map((r) => ({ ...r, gear: null })) });
+        return new Response(JSON.stringify(cat), { headers: { 'content-type': 'application/json' } });
+      }
+      return realFetch(url, opts);
+    };
+    window.addEventListener('error', (e) => { (window.pageErrors ||= []).push(String(e.message)); });
+    window.addEventListener('unhandledrejection', (e) => { (window.pageErrors ||= []).push(String(e.reason && e.reason.message || e.reason)); });
+    const tab = html.includes('data-tab="nov"') ? 'nov' : 'oct';
+    if (scene && !location.hash) history.replaceState(null, '', `${location.pathname}${location.search}#${tab}/${name}`);
+    const app = [...html.matchAll(/src="(js\/app\.js[^"]*)"/g)][0][1];
+    await import(`./${app}`);
+    window.pageReady = true;
+  </script>
+</body>
+</html>

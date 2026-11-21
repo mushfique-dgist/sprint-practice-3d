@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=202611011827';
-import { Stage, activationColor } from './scene.js?v=202611011827';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261121204910';
+import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261121204910';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -24,12 +24,32 @@ const GROUPS = [
 const ARM_LANES = { base: 2, twin: 3, mix: 4, brake: 5, dev: 6 };
 
 let CAT, stage;
-const state = { tab: 'main', pair: 1, deviceOn: false, showBase: true, cond: null, oct: null, time: 0, playing: false, speed: 1,
-  loop: false, chart: 'gap', sel: 1, hidden: new Set(), dur: 10 };
+const VIEWER_TABS = ['main', 'cond', 'nov', 'oct'];
+const state = { tab: 'main', pair: 1, deviceOn: false, showBase: true, cond: null, oct: null, nov: null, time: 0, playing: false, speed: 1,
+  loop: false, chart: 'gap', sel: 0, selKey: null, hidden: new Set(), dur: 10 };
 let runners = [];
 let loadToken = 0;
 const cache = new Map();
-const getRun = (file) => { if (!cache.has(file)) cache.set(file, loadRun(`data/${file}`)); return cache.get(file); };
+const KEEP_RUNS = 30;   // decoded recordings kept in memory (about 2.3 MB each); older ones are downloaded again if asked for
+const getRun = (file) => {
+  let p = cache.get(file);
+  if (p) cache.delete(file);   // put back below, as the most recently used
+  else {
+    p = loadRun(`data/${file}`);
+    p.catch(() => { if (cache.get(file) === p) cache.delete(file); });   // a failed download is tried again next time
+  }
+  cache.set(file, p);
+  return p;
+};
+function trimCache(inUse) {
+  for (const file of cache.keys()) {
+    if (cache.size <= KEEP_RUNS) break;
+    if (!inUse.includes(file)) cache.delete(file);
+  }
+}
+// the selection of the scenario on screen, to go back to when a newly picked one cannot be loaded
+const PICKED = ['tab', 'pair', 'deviceOn', 'showBase', 'cond', 'oct', 'nov'];
+let lastGood = null;
 
 // ---------------------------------------------------------------------------------------------------------------
 async function init() {
@@ -42,9 +62,25 @@ async function init() {
   $('#built').textContent = `Built ${CAT.built}`;
   state.cond = CAT.conditions.groups.flatMap((g) => g.items).find((c) => c.available)?.key || null;
   state.oct = CAT.oct23[0]?.key || null;
+  state.nov = novItems()[0]?.key || null;
+  $('.tabs [data-tab="nov"]').hidden = !state.nov;
   readHash();
-  const bones = await loadBones('data/bones.bin.gz');
-  stage = new Stage($('#stage'), bones);
+  // the tabs and the pages without 3D first, so that they work even when the 3D view cannot start
+  wireControls();
+  for (const [id, build] of [['results', buildResults], ['about', buildAbout]]) {
+    try { build(); } catch (e) { $(`#${id}`).innerHTML = `<div class="wrap"><div class="card">This page could not be built (${e.message}).</div></div>`; }
+  }
+  window.addEventListener('hashchange', onHashChange);
+  setInterval(checkUpdate, 5 * 60 * 1000);
+  try {
+    const bones = await loadBones('data/bones.bin.gz');
+    stage = new Stage($('#stage'), bones);
+  } catch (e) {
+    fail(`The 3D view could not start (${e.message}). The Results, Films and About tabs still work.`);
+    for (const el of [$('.transport'), $('.side'), $('#views')]) el.inert = true;
+    syncTabs();
+    return;
+  }
   stage.onWake = wake;
   // any input may change what is shown: draw for a short while after it, then stop (the page is idle when paused)
   for (const ev of ['pointerdown', 'wheel', 'keydown', 'input', 'change', 'click', 'touchstart']) {
@@ -52,40 +88,58 @@ async function init() {
   }
   document.addEventListener('pointermove', (e) => { if (e.buttons) wake(800); }, { capture: true, passive: true });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
-  wireControls();
-  buildResults();
-  buildFilms();
-  buildAbout();
   await showTab(state.tab, true);
   setupIntro();
-  setInterval(checkUpdate, 5 * 60 * 1000);
   kick();
+}
+
+// a message in place of the spinner, for a failure the page cannot recover from by itself
+function fail(msg) {
+  $('#loading span').textContent = msg;
+  $('#loading .spin').hidden = true;
+  $('#loading').hidden = false;
 }
 
 function readHash() {
   const p = location.hash.replace(/^#/, '').split('/').filter(Boolean);
   if (!p.length) return;
-  if (['main', 'cond', 'oct', 'results', 'films', 'about'].includes(p[0])) state.tab = p[0];
+  if (['main', 'cond', 'oct', 'results', 'films', 'about'].includes(p[0]) || (p[0] === 'nov' && state.nov)) state.tab = p[0];
   if (state.tab === 'main') {
+    state.deviceOn = p.includes('on');
     for (const x of p.slice(1)) {
       if (/^p\d+$/.test(x)) state.pair = Math.min(Math.max(parseInt(x.slice(1), 10), 1), CAT.main.pairs.length);
-      if (x === 'on') state.deviceOn = true;
     }
   }
-  if (state.tab === 'cond' && p[1]) state.cond = p[1];
-  if (state.tab === 'oct' && p[1]) state.oct = p[1];
+  // an unknown key in the link keeps the default instead of opening an empty stage
+  if (state.tab === 'cond' && condItem(p[1])?.available) state.cond = p[1];
+  if (state.tab === 'oct' && CAT.oct23.some((r) => r.key === p[1])) state.oct = p[1];
+  if (state.tab === 'nov' && novItem(p[1])) state.nov = p[1];
 }
 
-function writeHash() {
+// the address that the current selection would write
+function hashFor() {
   let h = state.tab;
   if (state.tab === 'main') h += `/p${state.pair}${state.deviceOn ? '/on' : ''}`;
   if (state.tab === 'cond' && state.cond) h += `/${state.cond}`;
   if (state.tab === 'oct' && state.oct) h += `/${state.oct}`;
-  history.replaceState(null, '', `#${h}`);
+  if (state.tab === 'nov' && state.nov) h += `/${state.nov}`;
+  return `#${h}`;
+}
+function writeHash() { history.replaceState(null, '', hashFor()); }
+// a link typed or pasted into the open page (replaceState above does not fire this)
+function onHashChange() {
+  if (location.hash === hashFor()) return;
+  readHash();
+  showTab(state.tab);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
 function condItem(key) { return CAT.conditions.groups.flatMap((g) => g.items).find((c) => c.key === key); }
+// the runners of November 2026 (catalogue section "nov"): groups of scenes, each scene a list of recordings
+function novItems() { return CAT.nov ? CAT.nov.groups.flatMap((g) => g.items) : []; }
+function novItem(key) { return novItems().find((c) => c.key === key); }
+// a scene may switch the gap readouts off (catalogue: "gap": false), so that no number on the page reads as an effect
+function gapShown() { return !(state.tab === 'nov' && novItem(state.nov)?.gap === false); }
 
 function specs() {
   const out = [];
@@ -115,7 +169,15 @@ function specs() {
     const R = CAT.oct23.find((r) => r.key === state.oct);
     if (R) R.runners.forEach((x, i) => out.push({ key: `o${i}`, file: x.file, lane: 3 + i, color: x.color, label: x.label, short: x.short, about: x.about,
       gear: x.gear ? CAT.gear[x.gear] : null, on: !!x.gear }));
+  } else if (state.tab === 'nov') {
+    const N = novItem(state.nov);
+    if (N) {
+      const first = Math.max(1, Math.floor((8 - N.runners.length) / 2) + 1);
+      N.runners.forEach((x, i) => out.push({ key: x.key, file: x.file, lane: first + i, color: x.color, label: x.label, short: x.short,
+        about: x.about, gear: x.gear ? CAT.gear[x.gear] : null, on: !!x.gear }));
+    }
   }
+  if (out.length > MAX_RUNNERS) out.length = MAX_RUNNERS;
   out.forEach((s, i) => { s.num = i + 1; });
   return out;
 }
@@ -125,55 +187,92 @@ function listAnd(a) { return a.length < 2 ? a.join('') : `${a.slice(0, -1).join(
 function minutes(steps) { return Math.round(steps / CAT.main.control_hz / 60); }
 
 function refIndex() {
-  const i = runners.findIndex((r) => r.key === 'twin');
+  const want = state.tab === 'nov' ? novItem(state.nov)?.ref : 'twin';
+  const i = runners.findIndex((r) => r.key === want);
   return i >= 0 ? i : 0;
 }
 
 async function loadScenario() {
   const token = ++loadToken;
   const sp = specs();
+  $('#loading span').textContent = 'Loading the recordings…';
+  $('#loading .spin').hidden = false;
   $('#loading').hidden = false;
+  let left = '';
   try {
-    const runs = await Promise.all(sp.map((s) => getRun(s.file)));
+    const res = await Promise.allSettled(sp.map((s) => getRun(s.file)));
     if (token !== loadToken) return;
-    runners = sp.map((s, i) => ({ ...s, run: runs[i], visible: !state.hidden.has(s.key) }));
+    const bad = sp.filter((s, i) => res[i].status === 'rejected');
+    if (!sp.length) throw new Error('nothing to show');
+    if (bad.length === sp.length) throw res[0].reason;
+    // a recording that cannot be read is left out and named; the others are shown
+    if (bad.length) left = `Left out, could not be loaded: ${bad.map((b) => b.label).join('; ')} (${res.find((r) => r.status === 'rejected').reason.message})`;
+    runners = sp.map((s, i) => ({ ...s, run: res[i].value, visible: !state.hidden.has(s.key) })).filter((r) => r.run);
   } catch (e) {
-    $('#loading span').textContent = 'Could not load a recording: ' + e.message;
+    if (token !== loadToken) return;
+    if (!lastGood) { fail(`Could not load a recording: ${e.message}. Reload the page to try again.`); return; }
+    // keep what is on screen and put the selection back, so the page never shows one scenario and names another
+    Object.assign(state, lastGood);
+    syncTabs();
+    buildPick();
+    $('#loading').hidden = true;
+    toast(`Could not load that recording (${e.message}). Still showing the previous one; pick it again to retry.`, 7000);
+    writeHash();
     return;
   }
+  lastGood = Object.fromEntries(PICKED.map((k) => [k, state[k]]));
   const R = state.tab === 'oct' ? CAT.oct23.find((r) => r.key === state.oct) : null;
   // a race from the 23 Oct slides is shown up to its shortest recording, as in the 23 Oct video
   state.dur = R && R.clip ? Math.min(...runners.map((r) => r.run.duration)) : Math.max(...runners.map((r) => r.run.duration));
   state.time = Math.min(state.time, state.dur);
-  if (state.sel >= runners.length) state.sel = 0;
-  if (state.tab === 'main' && runners[state.sel]?.key === 'base') state.sel = refIndex();
-  stage.setRunners(runners);
-  stage.selected = state.sel;
-  $('#time').max = state.dur.toFixed(3);
-  buildTicks();
-  buildPick();
-  buildBoard();
-  buildChart();
-  buildExplain();
-  buildHud();
+  // the selected sprinter stays the same one across scenarios (by name); otherwise the reference, never "before practice"
+  let sel = runners.findIndex((r) => r.key === state.selKey);
+  if (sel < 0 || (state.tab === 'main' && runners[sel].key === 'base')) sel = refIndex();
+  state.sel = sel;
+  state.selKey = runners[sel].key;
+  try {
+    stage.setRunners(runners);
+    stage.selected = state.sel;
+    $('#time').max = state.dur.toFixed(3);
+    buildTicks();
+    buildPick();
+    buildBoard();
+    buildChart();
+    buildExplain();
+    buildHud();
+  } catch (e) {
+    console.error(e);
+    fail(`This scene could not be shown (${e.message}). Pick another one, or reload the page.`);
+    return;
+  }
   $('#loading').hidden = true;
   writeHash();
+  trimCache(sp.map((x) => x.file));
+  if (left) toast(left, 9000);
   wake();   // new recordings: draw them (a paused page otherwise draws nothing)
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+function syncTabs() {
+  for (const b of $$('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === state.tab));
+  const viewer = VIEWER_TABS.includes(state.tab);
+  $('#viewer').hidden = !viewer;
+  for (const id of ['results', 'films', 'about']) $(`#${id}`).hidden = id !== state.tab;
+  return viewer;
+}
+
 async function showTab(tab, first = false) {
   state.tab = tab;
-  for (const b of $$('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
-  const viewer = ['main', 'cond', 'oct'].includes(tab);
-  $('#viewer').hidden = !viewer;
-  for (const id of ['results', 'films', 'about']) $(`#${id}`).hidden = id !== tab;
+  const viewer = syncTabs();
+  if (tab === 'films' && !$('#films').firstChild) buildFilms();   // posters and video headers are fetched only when asked for
+  if (tab !== 'films') for (const v of $$('video')) v.pause();
   if (!viewer) {
+    loadToken++;   // a load still on its way must not rebuild the viewer behind this page
     state.playing = false;
-    for (const v of $$('video')) if (tab !== 'films') v.pause();
     writeHash();
     return;
   }
+  if (!stage) return;
   if (!first) state.time = 0;
   state.playing = false;
   updatePlayUI();
@@ -191,7 +290,8 @@ function wireControls() {
   $('#fwd').addEventListener('click', () => step(1));
   const tl = $('#time');
   tl.addEventListener('input', () => { state.time = parseFloat(tl.value); state.playing = false; updatePlayUI(); });
-  $('#stage').addEventListener('dblclick', togglePlay);
+  // a double click on the 3D view itself, not on a button that lies over it
+  $('#stage').addEventListener('dblclick', (e) => { if (e.target.classList.contains('gl')) togglePlay(); });
   $('#speed').addEventListener('change', (e) => { state.speed = parseFloat(e.target.value); });
   $('#loop').addEventListener('change', (e) => { state.loop = e.target.checked; });
   for (const c of $$('[data-opt]')) {
@@ -234,7 +334,10 @@ function wireControls() {
     if (t !== null) { state.time = Math.min(Math.max(t, 0), state.dur); state.playing = false; updatePlayUI(); }
   });
   window.addEventListener('keydown', (e) => {
-    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName) && e.key !== ' ') return;
+    // a focused checkbox or list keeps its own keys; the timeline keeps Space and the arrows as play and one frame
+    // (its own arrow step would be a thousandth of a second)
+    const a = document.activeElement, tag = a?.tagName;
+    if (tag === 'SELECT' || tag === 'TEXTAREA' || (tag === 'INPUT' && a.id !== 'time' && (e.key !== ' ' || a.type === 'checkbox'))) return;
     if ($('#viewer').hidden) return;
     if (e.key === ' ') { e.preventDefault(); togglePlay(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
@@ -269,6 +372,7 @@ function setupIntro() {
 }
 
 function setView(v) {
+  if (!stage) return;
   stage.setView(v);
   for (const b of $$('#views button')) b.classList.toggle('on', b.dataset.view === v);
   if (v === 'gait') toast(`Close view of ${runners[state.sel]?.label || 'the selected sprinter'} alone; choose another in the race table`);
@@ -277,6 +381,10 @@ function setView(v) {
 
 function togglePlay() {
   if (!runners.length) return;
+  if (!$('#intro').hidden) {   // Space or a double click behind the first-visit card: the card goes, the race plays
+    $('#intro').hidden = true;
+    try { localStorage.setItem('sp3d-intro', '1'); } catch (e) { /* storage may be blocked */ }
+  }
   if (!state.playing && state.time >= state.dur - 1e-6) state.time = 0;
   state.playing = !state.playing;
   updatePlayUI();
@@ -296,18 +404,21 @@ function updatePlayUI() {
 }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 2600) {
   const t = $('#toast');
   t.textContent = msg;
   t.classList.add('on');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms);
 }
+
+// seconds between time marks: 2 for a 10 s race, wider for a longer recording, so that the marks never overlap
+function tickStep() { return [2, 5, 10, 30, 60, 120, 300].find((s) => state.dur / s <= 8) || 600; }
 
 function buildTicks() {
   const el = $('#ticks');
   el.innerHTML = '';
-  for (let s = 0; s <= Math.floor(state.dur); s += 2) {
+  for (let s = 0; s <= Math.floor(state.dur); s += tickStep()) {
     const i = document.createElement('i');
     i.style.left = `${(s / state.dur) * 100}%`;
     i.textContent = `${s} s`;
@@ -345,13 +456,21 @@ function buildPick() {
     const races = CAT.oct23.map((r) => `<button data-oct="${r.key}" class="${r.key === state.oct ? 'on' : ''}"><b>${r.title}</b><span>${r.sub}</span></button>`).join('');
     el.innerHTML = `<div class="pick-h"><h2>Races from the 23 Oct slides</h2></div><div class="races">${races}</div><ul class="who">${who}</ul>`;
     for (const b of $$('[data-oct]', el)) b.addEventListener('click', () => { state.oct = b.dataset.oct; state.time = 0; state.playing = false; updatePlayUI(); loadScenario(); });
+  } else if (state.tab === 'nov') {
+    const groups = CAT.nov.groups.map((g) => `<div class="grp">${g.title}</div>` + g.items.map((c) =>
+      `<button data-nov="${c.key}" class="${c.key === state.nov ? 'on' : ''}"><span>${c.label}</span><span class="g">${c.runners.length}</span></button>`).join('')).join('');
+    el.innerHTML = `<div class="pick-h"><h2>${CAT.nov.title}</h2></div>
+      <p class="pick-note">${CAT.nov.pick}</p>
+      <div class="conds">${groups}</div><ul class="who">${who}</ul>`;
+    for (const b of $$('[data-nov]', el)) b.addEventListener('click', () => { state.nov = b.dataset.nov; state.time = 0; state.playing = false; updatePlayUI(); loadScenario(); });
   }
   for (const c of $$('[data-vis]', el)) {
     c.addEventListener('change', () => {
       const r = runners[+c.dataset.vis];
       r.visible = c.checked;
       if (c.checked) state.hidden.delete(r.key); else state.hidden.add(r.key);
-      stage.lastFocusX = null;
+      stage.setVisible(+c.dataset.vis, c.checked);   // the stage keeps its own copy of every runner
+      buildChart();
     });
   }
 }
@@ -364,6 +483,7 @@ function buildHud() {
   }
   if (state.tab === 'cond') { const C = condItem(state.cond); t = `<b>Pair 1 under a changed condition: ${C ? C.label.toLowerCase() : ''}</b><br><span class="k">Device taken off; none of them met this condition in practice</span>`; }
   if (state.tab === 'oct') { const R = CAT.oct23.find((r) => r.key === state.oct); t = `<b>${R.title}</b> · 23 Oct slides<br><span class="k">Recorded 22 Oct, before the 25 Oct simulator corrections</span>`; }
+  if (state.tab === 'nov') { const N = novItem(state.nov); t = `<b>${N ? N.label : ''}</b><br><span class="k">${CAT.nov.hud}</span>`; }
   $('#hudTitle').innerHTML = t;
 }
 
@@ -372,43 +492,58 @@ function buildBoard() {
   const tb = $('#board tbody');
   const ref = runners[refIndex()];
   $('#gapHead').textContent = `Gap to ${ref ? ref.short : ''}`;
+  $('#board').classList.toggle('nogap', !gapShown());
   tb.innerHTML = runners.map((r, i) => `<tr data-i="${i}" class="${i === state.sel ? 'sel' : ''}" style="--c:${r.color}"><td><span class="sw">${r.num}</span></td><td>${r.short}</td><td class="dist"></td><td class="gap"></td><td class="spd"></td><td class="opt stp"></td><td class="opt rate"></td></tr>`).join('');
   for (const tr of $$('tr', tb)) {
     tr.addEventListener('click', () => {
       state.sel = +tr.dataset.i;
+      state.selKey = runners[state.sel].key;
       stage.selected = state.sel;
       for (const x of $$('tr', tb)) x.classList.toggle('sel', x === tr);
       if (stage.view === 'gait') toast(`Close view of ${runners[state.sel].label}`);
     });
   }
+  boardRows = $$('tr', tb).map((tr) => ({ tr, dist: $('.dist', tr), gap: $('.gap', tr), spd: $('.spd', tr), stp: $('.stp', tr), rate: $('.rate', tr) }));
   $('#boardHint').textContent = runners.some((r) => r.on) ? 'device on' : '';
-  $('#boardNote').textContent = 'One recorded start per sprinter. Registered numbers (see the text below and Results) average 256 starts.';
+  $('#boardNote').textContent = state.tab === 'nov' ? CAT.nov.board
+    : 'One recorded start per sprinter. Registered numbers (see the text below and Results) average 256 starts.';
 }
 
-let lastBoard = 0;
+// Writes into the page only when the content differs from what was written last (the table and the bars are
+// refreshed many times a second, mostly with the same text, and every write makes the browser lay the page out again).
+function put(el, html) { if (el._put !== html) { el._put = html; el.innerHTML = html; } }
+
+// Gap of a sprinter to the reference at a time, taken at the last moment BOTH were still running. A run that ended
+// early has no distance after its end; comparing later would count the other's whole remaining run as "gap".
+function gapAt(r, ref, time) {
+  const t = Math.min(time, r.run.duration, ref.run.duration);
+  return { g: distAt(r, t) - distAt(ref, t), t, cut: t < time - 1e-6 };
+}
+
+let lastBoard = 0, boardRows = [];
 function updateBoard(now) {
   if (now - lastBoard < 90) return;
   lastBoard = now;
-  const rows = $$('#board tbody tr');
   const ref = runners[refIndex()];
-  const refD = ref ? distAt(ref, state.time) : 0;
   let lead = -1, best = -Infinity;
   runners.forEach((r, i) => { const d = distAt(r, state.time); if (r.visible && d > best) { best = d; lead = i; } });
   runners.forEach((r, i) => {
-    const tr = rows[i];
-    if (!tr) return;
+    const c = boardRows[i];
+    if (!c) return;
     const d = distAt(r, state.time);
     const fi = frameAt(r.run, state.time);
     const sp = r.run.speed[Math.round(fi)];
     const st = recentSteps(r.run, state.time);
     const ended = r.run.fell && r.run.duration < state.dur - 1e-6 && state.time >= r.run.duration - 1e-6;
-    tr.querySelector('.dist').innerHTML = `<span class="${i === lead ? 'lead' : ''}">${d.toFixed(2)} m</span>`;
-    const g = d - refD;
-    tr.querySelector('.gap').innerHTML = r === ref ? '<span class="hint">ref.</span>' : `<span class="${g > 0.005 ? 'pos' : g < -0.005 ? 'neg' : ''}">${sg(g)}</span>`;
-    tr.querySelector('.spd').innerHTML = ended ? `<span class="fell" title="The simulator ended this run early">ended ${r.run.duration.toFixed(1)} s</span>` : `${sp.toFixed(1)} m/s`;
-    tr.querySelector('.stp').textContent = st ? `${st.len.toFixed(2)} m` : '–';
-    tr.querySelector('.rate').textContent = st ? `${st.rate.toFixed(2)}/s` : '–';
-    tr.style.opacity = r.visible ? 1 : 0.45;
+    put(c.dist, `<span class="${i === lead ? 'lead' : ''}">${d.toFixed(2)} m</span>`);
+    const G = gapAt(r, ref, state.time);
+    put(c.gap, r === ref ? '<span class="hint">ref.</span>' : `<span class="${G.g > 0.005 ? 'pos' : G.g < -0.005 ? 'neg' : ''}">${sg(G.g)}</span>` +
+      (G.cut ? ` <span class="hint" title="Gap at ${G.t.toFixed(1)} s, the last moment both runs were going">at ${G.t.toFixed(1)} s</span>` : ''));
+    put(c.spd, ended ? `<span class="fell" title="The simulator ended this run early">ended ${r.run.duration.toFixed(1)} s</span>` : `${sp.toFixed(1)} m/s`);
+    put(c.stp, st ? `${st.len.toFixed(2)} m` : '–');
+    put(c.rate, st ? `${st.rate.toFixed(2)}/s` : '–');
+    const op = r.visible ? '1' : '0.45';
+    if (c.tr._op !== op) { c.tr._op = op; c.tr.style.opacity = op; }
   });
 }
 
@@ -444,13 +579,19 @@ function buildChart() {
   const g = cv.getContext('2d', { willReadFrequently: true });
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   const ref = runners[refIndex()];
-  const isGap = state.chart === 'gap';
+  const isGap = state.chart === 'gap' && gapShown() && !!ref;
+  $('#chartCard .seg').hidden = !gapShown();
   $('#chartTitle').textContent = isGap ? `Gap to ${ref ? ref.short : ''} over time` : 'Speed over time (1 s average)';
   chart.series = runners.map((r) => {
-    const n = isGap ? Math.min(r.run.F, ref.run.F) : r.run.F;
+    // up to the end of the timeline (a clipped race stops at its shortest recording) and, for a gap, up to the end
+    // of the reference; the reference's distance is read at this sprinter's own frame times, so recordings with
+    // different frame rates or lengths still compare at equal times
+    const t = r.run.t, end = Math.min(state.dur, isGap ? ref.run.duration : Infinity) + 1e-6;
+    let n = r.run.F;
+    while (n > 0 && t[n - 1] - t[0] > end) n--;
     const y = new Float32Array(n);
-    for (let f = 0; f < n; f++) y[f] = isGap ? r.run.dist[f] - ref.run.dist[f] : r.run.speed[f];
-    return { r, t: r.run.t, y, n };
+    for (let f = 0; f < n; f++) y[f] = isGap ? r.run.dist[f] - distAt(ref, t[f] - t[0]) : r.run.speed[f];
+    return { r, t, y, n };
   });
   let lo = isGap ? -0.2 : 0, hi = isGap ? 0.2 : 1;
   const regs = chartRegs();
@@ -474,7 +615,7 @@ function buildChart() {
   }
   if (isGap) { g.strokeStyle = '#b8c3cf'; g.beginPath(); g.moveTo(chart.x0, cy(0)); g.lineTo(chart.x1, cy(0)); g.stroke(); }
   g.textAlign = 'center'; g.textBaseline = 'top';
-  for (let s = 0; s <= Math.ceil(state.dur); s += 2) g.fillText(`${s} s`, cx(s), chart.y1 + 6);
+  for (let s = 0; s <= Math.floor(state.dur + 1e-6); s += tickStep()) g.fillText(`${s} s`, cx(s), chart.y1 + 6);
   g.save(); g.translate(10, (chart.y0 + chart.y1) / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.textBaseline = 'top';
   g.fillText(isGap ? 'm' : 'm/s', 0, -2); g.restore();
   for (const s of chart.series) {
@@ -499,6 +640,7 @@ function cx(t) { return chart.x0 + (t / Math.max(state.dur, 1e-6)) * (chart.x1 -
 function cy(v) { return chart.y1 - ((v - chart.ymin) / (chart.ymax - chart.ymin)) * (chart.y1 - chart.y0); }
 function chartT(px) { if (px < chart.x0 - 4 || px > chart.x1 + 4) return null; return ((px - chart.x0) / (chart.x1 - chart.x0)) * state.dur; }
 function niceTicks(lo, hi, n) {
+  if (!(hi - lo > 0)) return [];   // an empty or not-a-number range has no ticks (and must not loop)
   const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
   const stepv = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((k) => span / k <= n + 1) || 10 * mag;
   const out = [];
@@ -540,17 +682,20 @@ function updateMuscles(now) {
     el.innerHTML = '<div class="g hd"><span></span><span>right leg</span><span>left leg</span></div>' +
       groupIdx.g.map((g) => `<div class="g"><span>${g.lab}</span><div class="b"><i></i></div><div class="b"><i></i></div></div>`).join('');
   }
-  $('#muscleWho').innerHTML = `<span style="color:${r.color};font-weight:650">${r.num} · ${r.short}</span>`;
+  put($('#muscleWho'), `<span style="color:${r.color};font-weight:650">${r.num} · ${r.short}</span>`);
+  $('#muscleCard').classList.toggle('none', !names.length);
   const fi = frameAt(r.run, state.time), M = r.run.M;
   const f0 = Math.floor(fi), f1 = Math.min(f0 + 1, r.run.F - 1), w = fi - f0;
   const a = (j) => (r.run.act[f0 * M + j] * (1 - w) + r.run.act[f1 * M + j] * w) / 255;
-  const bars = $$('.g .b i', el);
-  const c = new Color();
+  const bars = groupIdx.bars || (groupIdx.bars = $$('.g .b i', el));
+  const c = groupIdx.color || (groupIdx.color = new Color());
   groupIdx.g.forEach((g, k) => {
     for (const [side, list] of [[0, g.r], [1, g.l]]) {
       const v = list.length ? list.reduce((s, j) => s + a(j), 0) / list.length : 0;
-      const bar = bars[2 * k + side];
-      bar.style.width = `${(v * 100).toFixed(1)}%`;
+      const bar = bars[2 * k + side], w = `${(v * 100).toFixed(1)}%`;
+      if (bar._w === w) continue;
+      bar._w = w;
+      bar.style.width = w;
       bar.style.background = activationColor(v, c).getStyle(SRGBColorSpace);
     }
   });
@@ -562,8 +707,8 @@ function raceLine() {
   const ref = runners[refIndex()];
   if (!ref) return '';
   return runners.filter((r) => r !== ref && r.key !== 'base').map((r) => {
-    const g = distAt(r, state.dur) - distAt(ref, state.dur);
-    return `${r.short} <span class="num">${sg(g)} m</span>`;
+    const G = gapAt(r, ref, state.dur);
+    return `${r.short} <span class="num">${sg(G.g)} m</span>` + (G.cut ? ` (at ${G.t.toFixed(1)} s, when ${G.t >= ref.run.duration - 1e-6 ? `${ref.short}'s` : 'its own'} run ended)` : '');
   }).join(', ');
 }
 
@@ -659,6 +804,16 @@ function buildExplain() {
       <ul class="how">${R.runners.map((x) => `<li><span style="color:${x.color}">●</span> <b>${x.label}</b>${x.gear ? ' (device on: yellow band at the hips)' : ''}</li>`).join('')}</ul>
       <div class="note">${CAT.oct23_note}</div>
       <p>At the end of this recording: ${raceLine()}.</p>`;
+  } else if (state.tab === 'nov') {
+    const N = novItem(state.nov);
+    if (!N) { el.innerHTML = ''; return; }
+    el.innerHTML = `<h2>What you are watching</h2>
+      <div class="note">${CAT.nov.state}</div>
+      ${N.desc.map((p) => `<p>${p}</p>`).join('')}
+      <h3>Who is running</h3>
+      <ul class="how">${N.runners.map((x) => `<li><span style="color:${x.color}">●</span> <b>${x.label}:</b> ${x.about}</li>`).join('')}</ul>
+      ${(N.notes || []).map((n) => `<div class="note">${n}</div>`).join('')}
+      <p class="fine">${CAT.nov.fine}</p>`;
   }
 }
 
@@ -741,7 +896,7 @@ function buildResults() {
     b0 += '</svg>';
   }
   el.innerHTML = `<div class="wrap">
-    <div><h2>Registered results of this week</h2><p class="lead">Main test: every practised sprinter against its own twin, the device removed, ${M.n_pairs} pairs (${M.n_starts} starts per sprinter, two evaluation repeats). Points and rows marked ▸ open the matching race in 3D.</p></div>
+    <div><h2>Registered results of the main test (30 October 2026)</h2><p class="lead">Main test: every practised sprinter against its own twin, the device removed, ${M.n_pairs} pairs (${M.n_starts} starts per sprinter, two evaluation repeats). Points and rows marked ▸ open the matching race in 3D.</p></div>
     <div class="bign">${big}</div>
     <div class="card"><h2>Each pair's gain over its twin</h2><p class="fine" style="margin-top:2px">Circles: the ${M.n_pairs} pairs (numbers); band: 95% interval; line: mean. Click a circle to watch that pair.</p>${s}</div>
     <div class="card"><h2>Checks of the main result</h2><p class="fine" style="margin-top:2px">Gain over the twin under each check (${M.n_pairs} pairs; 95% interval). <span style="color:${A.mix.color}">●</span> ${A.mix.label} <span style="color:${A.brake.color}">●</span> ${A.brake.label}.</p>${forest}</div>
@@ -793,7 +948,9 @@ function quality(now) {
 function loop(now) {
   if ($('#viewer').hidden || !runners.length || (!state.playing && now > awakeUntil && !stage.busy())) { looping = false; return; }
   requestAnimationFrame(loop);
-  const dt = now - lastDraw > 250 ? 0 : Math.min((now - lastDraw) / 1000, 0.1);   // no jump after an idle spell
+  const idle = now - lastDraw > 250;
+  const dt = idle ? 0 : Math.min((now - lastDraw) / 1000, 0.1);   // no jump after an idle spell
+  if (idle) qN = 0;   // nor is the spell (a hidden tab, a pause) counted as slow frames by quality()
   lastDraw = now;
   {
     if (state.playing) {
@@ -819,4 +976,8 @@ function loop(now) {
 }
 
 window.addEventListener('resize', () => { if (runners.length) buildChart(); });
+// for the test pages (test/): the page's inner state, only when the address asks for it with ?debug
+if (new URLSearchParams(location.search).has('debug')) {
+  window.sp3d = { state, cache, get stage() { return stage; }, get runners() { return runners; } };
+}
 init();
