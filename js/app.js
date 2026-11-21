@@ -1,8 +1,8 @@
 // Page logic: scenario picking, playback, the race table, charts, muscle activity, and the results, films and about pages.
 // Every number shown comes from data/catalog.json (built from the analysis outputs) or from the recordings themselves.
 
-import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261121204910';
-import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261121204910';
+import { loadBones, loadRun, frameAt, recentSteps } from './data.js?v=20261121210635';
+import { Stage, activationColor, MAX_RUNNERS } from './scene.js?v=20261121210635';
 import { Color, SRGBColorSpace } from 'three';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -72,15 +72,18 @@ async function init() {
   }
   window.addEventListener('hashchange', onHashChange);
   setInterval(checkUpdate, 5 * 60 * 1000);
+  // the 3D controls answer only once the stage exists (they are wired above, before the bones have arrived)
+  const controls = [$('.transport'), $('.side'), $('#views')];
+  for (const el of controls) el.inert = true;
   try {
     const bones = await loadBones('data/bones.bin.gz');
     stage = new Stage($('#stage'), bones);
   } catch (e) {
     fail(`The 3D view could not start (${e.message}). The Results, Films and About tabs still work.`);
-    for (const el of [$('.transport'), $('.side'), $('#views')]) el.inert = true;
-    syncTabs();
+    showTab(state.tab, true);   // builds the page the address asks for (Films is built on demand); stops at a 3D tab
     return;
   }
+  for (const el of controls) el.inert = false;
   stage.onWake = wake;
   // any input may change what is shown: draw for a short while after it, then stop (the page is idle when paused)
   for (const ev of ['pointerdown', 'wheel', 'keydown', 'input', 'change', 'click', 'touchstart']) {
@@ -338,7 +341,7 @@ function wireControls() {
     // (its own arrow step would be a thousandth of a second)
     const a = document.activeElement, tag = a?.tagName;
     if (tag === 'SELECT' || tag === 'TEXTAREA' || (tag === 'INPUT' && a.id !== 'time' && (e.key !== ' ' || a.type === 'checkbox'))) return;
-    if ($('#viewer').hidden) return;
+    if ($('#viewer').hidden || !stage) return;
     if (e.key === ' ') { e.preventDefault(); togglePlay(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
@@ -811,7 +814,7 @@ function buildExplain() {
       <div class="note">${CAT.nov.state}</div>
       ${N.desc.map((p) => `<p>${p}</p>`).join('')}
       <h3>Who is running</h3>
-      <ul class="how">${N.runners.map((x) => `<li><span style="color:${x.color}">●</span> <b>${x.label}:</b> ${x.about}</li>`).join('')}</ul>
+      <ul class="how">${N.runners.map((x) => `<li><span style="color:${x.color}">●</span> <b>${x.label}:</b> ${x.about || ''}</li>`).join('')}</ul>
       ${(N.notes || []).map((n) => `<div class="note">${n}</div>`).join('')}
       <p class="fine">${CAT.nov.fine}</p>`;
   }

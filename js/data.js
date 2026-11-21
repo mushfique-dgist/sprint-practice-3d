@@ -7,6 +7,7 @@ async function fetchBytes(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   const buf = await res.arrayBuffer();
+  if (buf.byteLength < 2) return buf;   // too short to be anything; the caller's header check says so in words
   const b = new Uint8Array(buf, 0, 2);
   if (b[0] !== 0x1f || b[1] !== 0x8b) return buf; // already decompressed by the server
   const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));

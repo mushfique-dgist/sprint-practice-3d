@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { frameAt } from './data.js?v=20261121204910';
+import { frameAt } from './data.js?v=20261121210635';
 
 export const LANE_W = 1.22;
 export const laneZ = (lane) => (lane - 4.5) * LANE_W;
@@ -339,9 +339,15 @@ export class Stage {
       r.tag = el;
     }
     const n = this.runners.length;
-    for (const im of this.boneList) {
+    _m4.makeScale(0, 0, 0);
+    for (const [name, im] of Object.entries(this.boneIM)) {
       im.count = n;
-      for (let i = 0; i < n; i++) im.setColorAt(i, BONE);
+      for (let i = 0; i < n; i++) {
+        im.setColorAt(i, BONE);
+        // a bone this recording does not list is never written by update(): without this its place would keep
+        // the pose of whoever stood there in the scene before
+        if (!this.runners[i].run.head.meshes.includes(name)) im.setMatrixAt(i, _m4);
+      }
       im.instanceColor.needsUpdate = true;
     }
     this.applyTint();
@@ -353,6 +359,12 @@ export class Stage {
       for (const im of this.boneList) if (r.i < im.count) im.setColorAt(r.i, c);
     }
     for (const im of this.boneList) if (im.instanceColor) im.instanceColor.needsUpdate = true;
+  }
+
+  // the runner the Close view shows: the selected one, or the first one on show when the selected one is hidden
+  soloRunner() {
+    const s = this.runners[this.selected];
+    return s && s.visible !== false ? s : this.runners.find((r) => r.visible !== false);
   }
 
   // show or hide one runner (by its place on stage)
@@ -377,10 +389,11 @@ export class Stage {
     const race = this.opts.mode === 'race';
     const overlayZ = this.opts.mode === 'overlay' ? laneZ(this.centerLane()) : null;
     const printsEach = Math.floor(MAX_PRINTS / Math.max(this.runners.length, 1));
+    const alone = solo ? this.soloRunner() : null;
     for (const r of this.runners) {
       const run = r.run, V = run.V;
       r.visible = r.visible !== false;
-      r.shown = r.visible && (!solo || r.i === this.selected);
+      r.shown = r.visible && (!solo || r === alone);
       const fi = frameAt(run, time);
       const f0 = Math.floor(fi), f1 = Math.min(f0 + 1, run.F - 1), w = fi - f0;
       const px = interp(run.pelvis, 3, 0, fi), py = interp(run.pelvis, 3, 1, fi), pz = interp(run.pelvis, 3, 2, fi);
@@ -523,7 +536,7 @@ export class Stage {
     const hi = Math.max(...xs), lo = Math.min(...xs);
     const zs = vis.map((r) => r.z);
     const zMid = (Math.max(...zs) + Math.min(...zs)) / 2;
-    const sel = this.runners[this.selected] || vis[0];
+    const sel = this.soloRunner() || vis[0];
     const target = (hi + lo) / 2;
     const k = 1 - Math.exp(-dt * 5);
     // The focus moves with the runners exactly and eases out only an offset left by a change of who is framed (runners
